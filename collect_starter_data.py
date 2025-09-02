@@ -4,7 +4,7 @@ import time
 import json
 from datetime import datetime
 
-def collect_top_anime_simple(num_anime=50):
+def collect_top_anime_simple(num_anime=250):
     """
     Collect top anime data - simple version to get started
     """
@@ -85,5 +85,5 @@ def collect_top_anime_simple(num_anime=50):
 
 if __name__ == "__main__":
     # Start with just 50 anime to test everything works
-    df = collect_top_anime_simple(50)
+    df = collect_top_anime_simple(250)
     print("\n🚀 Ready for analysis! Check your data/ folder!")
