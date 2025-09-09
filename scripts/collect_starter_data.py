@@ -4,7 +4,7 @@ import time
 import json
 from datetime import datetime
 
-def collect_top_anime_simple(num_anime=250):
+def collect_top_anime_simple(num_anime=3000):
     """
     Collect top anime data - simple version to get started
     """
