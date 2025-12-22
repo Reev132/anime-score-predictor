@@ -41,6 +41,12 @@ st.markdown("""
         text-align: center;
         color: #4CAF50;
     }
+    .suggestion-button {
+        width: 100%;
+        text-align: left;
+        padding: 0.5rem;
+        margin: 0.2rem 0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -50,6 +56,12 @@ if 'prediction_history' not in st.session_state:
 
 if 'current_search' not in st.session_state:
     st.session_state.current_search = ""
+
+if 'selected_anime' not in st.session_state:
+    st.session_state.selected_anime = None
+
+if 'trigger_prediction' not in st.session_state:
+    st.session_state.trigger_prediction = False
 
 if 'api_client' not in st.session_state:
     with st.spinner("🔄 Initializing API client..."):
@@ -76,14 +88,14 @@ with st.sidebar:
     This app uses machine learning to predict MyAnimeList (MAL) scores for anime.
     
     **How it works:**
-    1. Enter an anime name
-    2. ML model analyzes features (genres, studios, type, etc.)
-    3. Predicts the likely MAL score
+    1. Start typing an anime name
+    2. Select from suggestions
+    3. Get instant ML prediction!
     
     **Perfect for:**
     - Unreleased anime
     - Upcoming seasons
-    - Comparing potential scores
+    - Comparing different seasons
     """)
     
     st.divider()
@@ -104,25 +116,70 @@ with st.sidebar:
         with st.spinner("🎲 Fetching random anime..."):
             random_anime = st.session_state.api_client.get_random_anime()
             if random_anime:
+                st.session_state.selected_anime = random_anime
                 st.session_state.current_search = random_anime['title']
+                st.session_state.trigger_prediction = True
                 st.rerun()
 
 # Main content
 st.header("🔍 Search for an Anime")
 
-# Search input
-search_query = st.text_input(
-    "Enter anime name:",
-    value=st.session_state.current_search,
-    placeholder="e.g., Attack on Titan, Death Note, Jujutsu Kaisen...",
-    key="search_input"
-)
+# Create a form for Enter key support
+with st.form(key="search_form", clear_on_submit=False):
+    search_query = st.text_input(
+        "Start typing to see suggestions...",
+        value=st.session_state.current_search,
+        placeholder="e.g., Attack on Titan, Death Note, Jujutsu Kaisen...",
+        key="search_input",
+        label_visibility="collapsed"
+    )
+    
+    # Form submit button (triggered by Enter key)
+    form_submit = st.form_submit_button("🚀 Predict Score", type="primary", use_container_width=True)
 
-# Predict button
-predict_button = st.button("🚀 Predict Score", type="primary", use_container_width=True)
+# Also provide button outside form for manual clicking
+predict_button = st.button("🚀 Predict Score (Click)", type="secondary", use_container_width=True, key="manual_predict")
+
+# Combine both triggers
+should_predict = form_submit or predict_button or st.session_state.trigger_prediction
+st.session_state.trigger_prediction = False  # Reset trigger
+
+# Show live suggestions as user types (case-insensitive)
+if search_query and len(search_query) >= 2 and not should_predict:
+    with st.spinner("💡 Getting suggestions..."):
+        suggestions = st.session_state.api_client.get_anime_suggestions(search_query, limit=8)
+        
+        if suggestions:
+            st.markdown("### 📋 Suggestions:")
+            st.caption("Click on an anime to predict its score")
+            
+            # Create columns for better layout
+            for idx, suggestion in enumerate(suggestions):
+                # Format suggestion text
+                title = suggestion['title']
+                year = suggestion.get('year', 'N/A')
+                anime_type = suggestion.get('type', 'N/A')
+                score = suggestion.get('score')
+                score_text = f"⭐ {score:.1f}" if score else "No score"
+                
+                # Create button for each suggestion
+                col1, col2 = st.columns([4, 1])
+                
+                with col1:
+                    suggestion_text = f"**{title}** ({year}) - {anime_type}"
+                    if st.button(suggestion_text, key=f"suggestion_{idx}", use_container_width=True):
+                        # User clicked a suggestion - fetch full data and predict
+                        st.session_state.current_search = title
+                        st.session_state.trigger_prediction = True
+                        st.rerun()
+                
+                with col2:
+                    st.caption(score_text)
+            
+            st.divider()
 
 # Handle prediction
-if predict_button and search_query and st.session_state.model_loaded:
+if should_predict and search_query and st.session_state.model_loaded:
     # Update current search
     st.session_state.current_search = search_query
     
@@ -132,7 +189,7 @@ if predict_button and search_query and st.session_state.model_loaded:
         
         if anime_data is None:
             st.error(f"❌ Could not find anime: '{search_query}'")
-            st.info("💡 Try checking the spelling or using a different name (English/Japanese)")
+            st.info("💡 Try:\n- Checking the spelling\n- Using the full title\n- Selecting from suggestions above")
         else:
             with st.spinner("🤖 Making prediction..."):
                 try:
@@ -174,6 +231,8 @@ if st.session_state.prediction_history:
         st.markdown(f"### {anime['title']}")
         if anime.get('title_english') and anime['title_english'] != anime['title']:
             st.caption(f"English: {anime['title_english']}")
+        if anime.get('title_japanese') and anime['title_japanese'] != anime['title']:
+            st.caption(f"Japanese: {anime['title_japanese']}")
         
         # Prediction score
         predicted_score = result['predicted_score']
@@ -202,9 +261,17 @@ if st.session_state.prediction_history:
         if anime.get('is_released'):
             st.success("✅ Released")
             if anime.get('score'):
-                st.metric("Actual Score", f"{anime['score']:.2f}")
-                error = abs(predicted_score - anime['score'])
-                st.metric("Prediction Error", f"{error:.2f}")
+                actual_score = anime['score']
+                st.metric("Actual Score", f"{actual_score:.2f}")
+                error = abs(predicted_score - actual_score)
+                
+                # Calculate if prediction was accurate
+                if error <= 0.5:
+                    st.success(f"🎯 Very Accurate! Error: {error:.2f}")
+                elif error <= 1.0:
+                    st.info(f"✅ Accurate! Error: {error:.2f}")
+                else:
+                    st.warning(f"⚠️ Error: {error:.2f}")
         else:
             st.warning("⏳ Unreleased")
     
@@ -280,7 +347,7 @@ if st.session_state.prediction_history:
             {
                 'Anime': entry['anime_data']['title'],
                 'Predicted Score': f"{entry['result']['predicted_score']:.2f}",
-                'Confidence Range': f"{entry['result']['confidence_interval'][0]:.2f} - {entry['result']['confidence_interval'][1]:.2f}",
+                'Actual Score': f"{entry['anime_data'].get('score', 'N/A')}",
                 'Type': entry['anime_data'].get('type', 'Unknown'),
                 'Year': entry['anime_data'].get('year', 'Unknown')
             }
@@ -291,7 +358,7 @@ if st.session_state.prediction_history:
 
 else:
     # Welcome message when no predictions yet
-    st.info("👆 Enter an anime name above and click 'Predict Score' to get started!")
+    st.info("👆 Start typing an anime name to see suggestions, then press **Enter** or click **Predict Score**!")
     
     st.divider()
     
@@ -302,17 +369,18 @@ else:
     
     examples = [
         "Attack on Titan",
-        "Death Note",
+        "Death Note", 
         "Steins Gate",
         "Fullmetal Alchemist Brotherhood",
-        "Your Name",
-        "Demon Slayer"
+        "Demon Slayer",
+        "Jujutsu Kaisen"
     ]
     
     for idx, example in enumerate(examples):
         with example_cols[idx % 3]:
             if st.button(f"🎬 {example}", key=f"example_{idx}", use_container_width=True):
                 st.session_state.current_search = example
+                st.session_state.trigger_prediction = True
                 st.rerun()
 
 # Footer
@@ -320,6 +388,7 @@ st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 2rem 0;'>
     <p>🎌 Built with Streamlit | 🤖 Powered by Machine Learning | 📊 Data from MyAnimeList</p>
+    <p>💡 <strong>Pro Tips:</strong> Press Enter to predict | Type 2+ characters for suggestions | Works with any case!</p>
     <p>Created as a data science portfolio project</p>
 </div>
 """, unsafe_allow_html=True)
