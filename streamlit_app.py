@@ -35,23 +35,11 @@ st.markdown("""
         color: #666;
         margin-bottom: 2rem;
     }
-    .prediction-box {
-        background-color: #f0f2f6;
-        padding: 2rem;
-        border-radius: 10px;
-        margin: 1rem 0;
-    }
     .score-display {
         font-size: 4rem;
         font-weight: bold;
         text-align: center;
         color: #4CAF50;
-    }
-    .anime-info {
-        background-color: #ffffff;
-        padding: 1rem;
-        border-radius: 5px;
-        margin: 0.5rem 0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -59,6 +47,9 @@ st.markdown("""
 # Initialize session state
 if 'prediction_history' not in st.session_state:
     st.session_state.prediction_history = []
+
+if 'current_search' not in st.session_state:
+    st.session_state.current_search = ""
 
 if 'api_client' not in st.session_state:
     with st.spinner("🔄 Initializing API client..."):
@@ -109,57 +100,32 @@ with st.sidebar:
     st.divider()
     
     st.header("🎲 Try Random")
-    if st.button("Get Random Anime"):
+    if st.button("Get Random Anime", use_container_width=True):
         with st.spinner("🎲 Fetching random anime..."):
             random_anime = st.session_state.api_client.get_random_anime()
             if random_anime:
-                st.session_state.search_query = random_anime['title']
+                st.session_state.current_search = random_anime['title']
                 st.rerun()
 
 # Main content
-col1, col2 = st.columns([2, 1])
+st.header("🔍 Search for an Anime")
 
-with col1:
-    st.header("🔍 Search for an Anime")
-    
-    # Search input
-    search_query = st.text_input(
-        "Enter anime name:",
-        value=st.session_state.get('search_query', ''),
-        placeholder="e.g., Attack on Titan, Death Note, Jujutsu Kaisen...",
-        key="search_input"
-    )
-    
-    # Update session state with current search
-    if search_query:
-        st.session_state.search_query = search_query
-    
-    # Search suggestions
-    if search_query and len(search_query) >= 3:
-        with st.spinner("💡 Getting suggestions..."):
-            suggestions = st.session_state.api_client.get_anime_suggestions(search_query, limit=5)
-            
-            if suggestions:
-                st.write("**Suggestions:**")
-                
-                # Create clickable buttons for each suggestion
-                for idx, suggestion in enumerate(suggestions):
-                    suggestion_text = f"{suggestion['title']} ({suggestion['year']}) - {suggestion['type']}"
-                    if st.button(suggestion_text, key=f"suggestion_btn_{idx}"):
-                        st.session_state.search_query = suggestion['title']
-                        st.rerun()
+# Search input
+search_query = st.text_input(
+    "Enter anime name:",
+    value=st.session_state.current_search,
+    placeholder="e.g., Attack on Titan, Death Note, Jujutsu Kaisen...",
+    key="search_input"
+)
 
-with col2:
-    st.header("🎯 Quick Actions")
-    predict_button = st.button("🚀 Predict Score", type="primary", use_container_width=True)
-    clear_button = st.button("🗑️ Clear Results", use_container_width=True)
-    
-    if clear_button:
-        st.session_state.prediction_history = []
-        st.rerun()
+# Predict button
+predict_button = st.button("🚀 Predict Score", type="primary", use_container_width=True)
 
-# Prediction logic
+# Handle prediction
 if predict_button and search_query and st.session_state.model_loaded:
+    # Update current search
+    st.session_state.current_search = search_query
+    
     with st.spinner(f"🔍 Searching for '{search_query}'..."):
         # Get anime data
         anime_data = st.session_state.api_client.get_full_anime_info_for_prediction(search_query)
@@ -180,8 +146,8 @@ if predict_button and search_query and st.session_state.model_loaded:
                     }
                     st.session_state.prediction_history.insert(0, history_entry)
                     
-                    # Keep only last 5 predictions
-                    st.session_state.prediction_history = st.session_state.prediction_history[:5]
+                    # Keep only last 10 predictions
+                    st.session_state.prediction_history = st.session_state.prediction_history[:10]
                     
                 except Exception as e:
                     st.error(f"❌ Prediction failed: {e}")
@@ -298,6 +264,13 @@ if st.session_state.prediction_history:
     if anime.get('url'):
         st.markdown(f"[🔗 View on MyAnimeList]({anime['url']})")
     
+    # Clear results button
+    st.divider()
+    if st.button("🗑️ Clear All Results", use_container_width=True):
+        st.session_state.prediction_history = []
+        st.session_state.current_search = ""
+        st.rerun()
+    
     # Prediction history
     if len(st.session_state.prediction_history) > 1:
         st.divider()
@@ -330,16 +303,16 @@ else:
     examples = [
         "Attack on Titan",
         "Death Note",
-        "Steins;Gate",
-        "Fullmetal Alchemist",
+        "Steins Gate",
+        "Fullmetal Alchemist Brotherhood",
         "Your Name",
         "Demon Slayer"
     ]
     
     for idx, example in enumerate(examples):
         with example_cols[idx % 3]:
-            if st.button(f"🎬 {example}", key=f"example_{idx}"):
-                st.session_state.search_query = example
+            if st.button(f"🎬 {example}", key=f"example_{idx}", use_container_width=True):
+                st.session_state.current_search = example
                 st.rerun()
 
 # Footer
