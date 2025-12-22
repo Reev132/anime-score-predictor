@@ -8,8 +8,8 @@ import pandas as pd
 script_dir = Path(__file__).parent / "scripts"
 sys.path.insert(0, str(script_dir))
 
-from scripts.anime_lookup import AnimeAPIClient
-from scripts.prediction_interface import AnimeScorePredictionInterface
+from anime_lookup import AnimeAPIClient
+from prediction_interface import AnimeScorePredictionInterface
 
 # Page configuration
 st.set_page_config(
@@ -130,6 +130,10 @@ with col1:
         key="search_input"
     )
     
+    # Update session state with current search
+    if search_query:
+        st.session_state.search_query = search_query
+    
     # Search suggestions
     if search_query and len(search_query) >= 3:
         with st.spinner("💡 Getting suggestions..."):
@@ -137,16 +141,13 @@ with col1:
             
             if suggestions:
                 st.write("**Suggestions:**")
-                suggestion_names = [f"{s['title']} ({s['year']}) - {s['type']}" for s in suggestions]
-                selected_suggestion = st.selectbox(
-                    "Select from suggestions:",
-                    options=[""] + suggestion_names,
-                    key="suggestion_select"
-                )
                 
-                if selected_suggestion:
-                    # Extract the title from the selection
-                    search_query = selected_suggestion.split(" (")[0]
+                # Create clickable buttons for each suggestion
+                for idx, suggestion in enumerate(suggestions):
+                    suggestion_text = f"{suggestion['title']} ({suggestion['year']}) - {suggestion['type']}"
+                    if st.button(suggestion_text, key=f"suggestion_btn_{idx}"):
+                        st.session_state.search_query = suggestion['title']
+                        st.rerun()
 
 with col2:
     st.header("🎯 Quick Actions")
