@@ -1,0 +1,52 @@
+================================================================================
+ANIME SCORE PREDICTION MODEL - VALIDATION REPORT
+================================================================================
+
+Report Generated: 2025-12-22 11:22:59
+Model: Random Forest
+Dataset: data/raw\mega_anime_dataset_20251222_104523.csv
+Total Anime Tested: 3602
+
+================================================================================
+ACCURACY METRICS
+================================================================================
+
+Error Metrics:
+  - Mean Absolute Error (MAE): 0.267
+  - Root Mean Squared Error (RMSE): 0.380
+  - Mean Absolute Percentage Error (MAPE): 3.82%
+  - R² Score: 0.821
+
+Accuracy Bands:
+  - Within ±0.5 points: 83.2%
+  - Within ±1.0 points: 98.3%
+  - Within ±1.5 points: 99.6%
+  - Within 95% Confidence Interval: 98.0%
+
+Prediction Bias:
+  - Direction Accuracy: 84.2%
+  - Over-predictions (predicted > actual): 35.0%
+  - Under-predictions (predicted < actual): 63.3%
+
+================================================================================
+INTERPRETATION
+================================================================================
+
+✅ EXCELLENT: Model predictions are highly accurate (80%+ within 1 point)
+
+⚠️  Model tends to under-predict scores
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+For Portfolio/Resume:
+  - 'Achieved 98% prediction accuracy (±1.0 point)'
+  - 'MAE of 0.27 on 10-point scale'
+  - 'R² score of 0.82'
+
+Model Strengths:
+  - Best performance on TV anime
+  - 98% of predictions within confidence interval
+
+================================================================================

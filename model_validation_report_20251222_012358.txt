@@ -1,0 +1,52 @@
+================================================================================
+ANIME SCORE PREDICTION MODEL - VALIDATION REPORT
+================================================================================
+
+Report Generated: 2025-12-22 01:23:58
+Model: Gradient Boosting
+Dataset: data/raw\enhanced_anime_dataset_20250908_192602.csv
+Total Anime Tested: 688
+
+================================================================================
+ACCURACY METRICS
+================================================================================
+
+Error Metrics:
+  - Mean Absolute Error (MAE): 0.241
+  - Root Mean Squared Error (RMSE): 0.322
+  - Mean Absolute Percentage Error (MAPE): 3.24%
+  - R² Score: 0.842
+
+Accuracy Bands:
+  - Within ±0.5 points: 89.1%
+  - Within ±1.0 points: 98.8%
+  - Within ±1.5 points: 100.0%
+  - Within 95% Confidence Interval: 97.5%
+
+Prediction Bias:
+  - Direction Accuracy: 91.9%
+  - Over-predictions (predicted > actual): 50.7%
+  - Under-predictions (predicted < actual): 47.1%
+
+================================================================================
+INTERPRETATION
+================================================================================
+
+✅ EXCELLENT: Model predictions are highly accurate (80%+ within 1 point)
+
+✅ Model is well-balanced (no significant over/under prediction bias)
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+For Portfolio/Resume:
+  - 'Achieved 99% prediction accuracy (±1.0 point)'
+  - 'MAE of 0.24 on 10-point scale'
+  - 'R² score of 0.84'
+
+Model Strengths:
+  - Best performance on TV anime
+  - 98% of predictions within confidence interval
+
+================================================================================
