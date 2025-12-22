@@ -8,8 +8,8 @@ import pandas as pd
 script_dir = Path(__file__).parent / "scripts"
 sys.path.insert(0, str(script_dir))
 
-from anime_lookup import AnimeAPIClient
-from prediction_interface import AnimeScorePredictionInterface
+from scripts.anime_lookup import AnimeAPIClient
+from scripts.prediction_interface import AnimeScorePredictionInterface
 
 # Page configuration
 st.set_page_config(
