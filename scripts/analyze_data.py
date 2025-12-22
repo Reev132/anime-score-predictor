@@ -8,25 +8,25 @@ def analyze_anime_dataset(csv_file):
     """
     Complete analysis of your anime dataset
     """
-    print("🎌 Loading and analyzing your anime dataset...")
+    print("Loading and analyzing your anime dataset...")
     
     # Load the data
     df = pd.read_csv(csv_file)
     
-    print(f"📊 Dataset Overview:")
+    print(f"Dataset Overview:")
     print(f"Shape: {df.shape}")
     print(f"Columns: {df.columns.tolist()}")
-    print(f"\n🎯 Score Range: {df['score'].min():.2f} - {df['score'].max():.2f}")
-    print(f"📈 Average Score: {df['score'].mean():.2f}")
+    print(f"\nScore Range: {df['score'].min():.2f} - {df['score'].max():.2f}")
+    print(f"Average Score: {df['score'].mean():.2f}")
     
     # Check for missing values
-    print(f"\n❓ Missing Values:")
+    print(f"\nMissing Values:")
     missing = df.isnull().sum()
     for col, count in missing[missing > 0].items():
         print(f"  {col}: {count} ({count/len(df)*100:.1f}%)")
     
     # Basic statistics
-    print(f"\n📈 Score Statistics:")
+    print(f"\nScore Statistics:")
     print(df['score'].describe())
     
     # Create comprehensive visualizations
@@ -50,7 +50,7 @@ def create_visualizations(df):
     """
     Create comprehensive visualizations
     """
-    print("📊 Creating visualizations...")
+    print("Creating visualizations...")
     
     # Create a large figure with multiple subplots
     fig, axes = plt.subplots(3, 3, figsize=(20, 15))
