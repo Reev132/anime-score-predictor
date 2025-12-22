@@ -5,6 +5,7 @@ import random
 from typing import Optional, List, Dict
 from datetime import datetime, timedelta
 import os
+import re
 
 class AnimeAPIClient:
     """
@@ -21,7 +22,7 @@ class AnimeAPIClient:
         """
         self.base_url = "https://api.jikan.moe/v4"
         self.cache_dir = cache_dir
-        self.request_delay = 0.5  # 500ms delay between requests (respectful rate limiting)
+        self.request_delay = 1.0  # 1 second delay between requests
         self.last_request_time = 0
         self.cache_duration = 86400  # 24 hours in seconds
         
@@ -31,9 +32,19 @@ class AnimeAPIClient:
         print(f"🎌 Jikan API Client initialized")
         print(f"📁 Cache directory: {cache_dir}")
     
+    def _sanitize_cache_key(self, cache_key: str) -> str:
+        """Sanitize cache key to be a valid filename"""
+        # Remove invalid characters for filenames
+        sanitized = re.sub(r'[<>:"/\\|?*]', '_', cache_key)
+        # Limit length
+        if len(sanitized) > 200:
+            sanitized = sanitized[:200]
+        return sanitized
+    
     def _get_cache_path(self, cache_key: str) -> str:
         """Get the file path for a cache key"""
-        return os.path.join(self.cache_dir, f"{cache_key}.json")
+        sanitized_key = self._sanitize_cache_key(cache_key)
+        return os.path.join(self.cache_dir, f"{sanitized_key}.json")
     
     def _load_from_cache(self, cache_key: str) -> Optional[Dict]:
         """
@@ -51,7 +62,7 @@ class AnimeAPIClient:
             return None
         
         try:
-            with open(cache_path, 'r') as f:
+            with open(cache_path, 'r', encoding='utf-8') as f:
                 cache_data = json.load(f)
             
             # Check if cache is expired
@@ -80,7 +91,7 @@ class AnimeAPIClient:
                 'timestamp': datetime.now().isoformat(),
                 'data': data
             }
-            with open(cache_path, 'w') as f:
+            with open(cache_path, 'w', encoding='utf-8') as f:
                 json.dump(cache_data, f)
         except Exception as e:
             print(f"⚠️  Error saving to cache: {e}")
@@ -89,7 +100,7 @@ class AnimeAPIClient:
         """Implement rate limiting to respect API limits"""
         elapsed = time.time() - self.last_request_time
         if elapsed < self.request_delay:
-            sleep_time = self.request_delay - elapsed + random.uniform(0, 0.1)
+            sleep_time = self.request_delay - elapsed + random.uniform(0, 0.2)
             time.sleep(sleep_time)
         self.last_request_time = time.time()
     
@@ -106,7 +117,13 @@ class AnimeAPIClient:
             Response data or None if request fails
         """
         url = f"{self.base_url}/{endpoint}"
-        cache_key = f"{endpoint}_{json.dumps(params or {}, sort_keys=True)}"
+        
+        # Create cache key from endpoint and params
+        if params:
+            params_str = "_".join([f"{k}={v}" for k, v in sorted(params.items())])
+            cache_key = f"{endpoint}_{params_str}"
+        else:
+            cache_key = endpoint
         
         # Try loading from cache first
         if use_cache:
@@ -133,27 +150,23 @@ class AnimeAPIClient:
             print(f"❌ API request failed: {e}")
             return None
     
-    def search_anime_by_name(self, anime_name: str) -> Optional[Dict]:
+    def search_anime_by_name(self, anime_name: str, exact_match: bool = False) -> Optional[Dict]:
         """
         Search for an anime by name and return detailed information
         
         Args:
             anime_name: Name of the anime to search for
+            exact_match: If True, try to find exact title match
             
         Returns:
             Dictionary with detailed anime information or None if not found
-            
-        Example:
-            >>> client = AnimeAPIClient()
-            >>> result = client.search_anime_by_name("Attack on Titan")
-            >>> print(result['title'], result['score'])
         """
         print(f"🔍 Searching for anime: {anime_name}")
         
         # Search for the anime
         search_results = self._make_request(
             "anime",
-            {"query": anime_name, "limit": 1},
+            {"q": anime_name, "limit": 10},  # Get top 10 results
             use_cache=True
         )
         
@@ -161,8 +174,32 @@ class AnimeAPIClient:
             print(f"❌ No anime found with name: {anime_name}")
             return None
         
-        # Get the first result's MAL ID
-        mal_id = search_results[0]['mal_id']
+        # Try to find best match
+        best_match = None
+        anime_name_lower = anime_name.lower().strip()
+        
+        for anime in search_results:
+            title = anime.get('title', '').lower()
+            title_english = anime.get('title_english', '').lower() if anime.get('title_english') else ''
+            
+            # Check for exact match first
+            if title == anime_name_lower or title_english == anime_name_lower:
+                best_match = anime
+                print(f"✅ Found exact match: {anime.get('title')}")
+                break
+            
+            # Check if search term is in title
+            if anime_name_lower in title or anime_name_lower in title_english:
+                if best_match is None:
+                    best_match = anime
+        
+        # If no good match, use first result
+        if best_match is None:
+            best_match = search_results[0]
+            print(f"⚠️  No exact match, using: {best_match.get('title')}")
+        
+        # Get the MAL ID and fetch full details
+        mal_id = best_match['mal_id']
         
         # Fetch full details
         return self.get_anime_by_id(mal_id)
@@ -250,18 +287,12 @@ class AnimeAPIClient:
             
         Returns:
             List of anime suggestions with basic info
-            
-        Example:
-            >>> client = AnimeAPIClient()
-            >>> suggestions = client.get_anime_suggestions("Attack")
-            >>> for s in suggestions:
-            ...     print(s['title'], s['year'])
         """
         print(f"💡 Getting suggestions for: {query}")
         
         search_results = self._make_request(
             "anime",
-            {"query": query, "limit": limit},
+            {"q": query, "limit": limit},
             use_cache=True
         )
         
@@ -351,14 +382,6 @@ class AnimeAPIClient:
             
         Returns:
             Complete anime data ready for ML prediction, or None if not found
-            
-        Example:
-            >>> client = AnimeAPIClient()
-            >>> anime_info = client.get_full_anime_info_for_prediction("Attack on Titan Season 5")
-            >>> if anime_info:
-            ...     print(f"Found: {anime_info['title']}")
-            ...     print(f"Type: {anime_info['type']}")
-            ...     print(f"Episodes: {anime_info['episodes']}")
         """
         print(f"🎬 Fetching complete anime info for: {anime_name}")
         
@@ -448,7 +471,7 @@ if __name__ == "__main__":
     # Test 1: Search for an anime by name
     print("\n🧪 Test 1: Search by name")
     print("-" * 60)
-    anime = client.search_anime_by_name("Attack on Titan")
+    anime = client.search_anime_by_name("Death Note")
     if anime:
         print(f"✅ Found: {anime['title']}")
         print(f"   Score: {anime['score']}")
@@ -463,20 +486,6 @@ if __name__ == "__main__":
     suggestions = client.get_anime_suggestions("Death", limit=5)
     for s in suggestions:
         print(f"  • {s['title']} ({s['year']}) - {s['score']}/10")
-    
-    # Test 3: Get a random anime
-    print("\n🧪 Test 3: Random anime")
-    print("-" * 60)
-    random_anime = client.get_random_anime()
-    if random_anime:
-        print(f"✅ Random anime: {random_anime['title']}")
-    
-    # Test 4: Get top anime
-    print("\n🧪 Test 4: Top anime")
-    print("-" * 60)
-    top_anime = client.get_top_anime(page=1, limit=5)
-    for anime in top_anime:
-        print(f"  • {anime['title']} - {anime['score']}/10 (Rank #{anime['rank']})")
     
     print("\n" + "=" * 60)
     print("✅ All tests completed!")
