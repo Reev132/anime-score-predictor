@@ -124,138 +124,138 @@ class AnimeScorePredictionInterface:
         
         return result
     
-def _create_feature_vector(self, anime_info):
-    """
-    Convert anime info dictionary to feature vector matching training data
-    """
-    feature_vector = np.zeros(len(self.feature_columns))
-    current_year = datetime.now().year
+    def _create_feature_vector(self, anime_info):
+        """
+        Convert anime info dictionary to feature vector matching training data
+        """
+        feature_vector = np.zeros(len(self.feature_columns))
+        current_year = datetime.now().year
 
-    for i, feature in enumerate(self.feature_columns):
+        for i, feature in enumerate(self.feature_columns):
 
-        # === NUMERICAL FEATURES ===
-        if feature == 'episodes':
-            episodes = anime_info.get('episodes')
-            feature_vector[i] = episodes if episodes is not None and episodes > 0 else 12
+            # === NUMERICAL FEATURES ===
+            if feature == 'episodes':
+                episodes = anime_info.get('episodes')
+                feature_vector[i] = episodes if episodes is not None and episodes > 0 else 12
 
-        elif feature == 'year':
-            year = anime_info.get('year')
-            feature_vector[i] = year if year is not None else current_year
+            elif feature == 'year':
+                year = anime_info.get('year')
+                feature_vector[i] = year if year is not None else current_year
 
-        elif feature == 'members':
-            feature_vector[i] = anime_info.get('members') or 50000
+            elif feature == 'members':
+                feature_vector[i] = anime_info.get('members') or 50000
 
-        elif feature == 'favorites':
-            feature_vector[i] = anime_info.get('favorites') or 2000
+            elif feature == 'favorites':
+                feature_vector[i] = anime_info.get('favorites') or 2000
 
-        elif feature == 'scored_by':
-            feature_vector[i] = anime_info.get('scored_by') or 25000
+            elif feature == 'scored_by':
+                feature_vector[i] = anime_info.get('scored_by') or 25000
 
-        elif feature == 'popularity':
-            feature_vector[i] = anime_info.get('popularity') or 1000
+            elif feature == 'popularity':
+                feature_vector[i] = anime_info.get('popularity') or 1000
 
-        elif feature == 'anime_age':
-            year = anime_info.get('year') or current_year
-            feature_vector[i] = current_year - year
+            elif feature == 'anime_age':
+                year = anime_info.get('year') or current_year
+                feature_vector[i] = current_year - year
 
-        elif feature == 'is_recent':
-            year = anime_info.get('year') or current_year
-            feature_vector[i] = 1 if (current_year - year) <= 5 else 0
+            elif feature == 'is_recent':
+                year = anime_info.get('year') or current_year
+                feature_vector[i] = 1 if (current_year - year) <= 5 else 0
 
-        elif feature == 'engagement_rate':
-            members = anime_info.get('members')
-            scored_by = anime_info.get('scored_by')
+            elif feature == 'engagement_rate':
+                members = anime_info.get('members')
+                scored_by = anime_info.get('scored_by')
 
-            if members is None or members <= 0:
-                members = 1
-            if scored_by is None or scored_by < 0:
-                scored_by = 0
+                if members is None or members <= 0:
+                    members = 1
+                if scored_by is None or scored_by < 0:
+                    scored_by = 0
 
-            feature_vector[i] = scored_by / members
+                feature_vector[i] = scored_by / members
 
-        elif feature == 'source_encoded':
-            source_mapping = {
-                'Manga': 1,
-                'Light novel': 2,
-                'Visual novel': 3,
-                'Novel': 4,
-                'Original': 5,
-                'Game': 6,
-                'Web manga': 7,
-                'Other': 0
-            }
-            feature_vector[i] = source_mapping.get(
-                anime_info.get('source', 'Other'),
-                0
-            )
+            elif feature == 'source_encoded':
+                source_mapping = {
+                    'Manga': 1,
+                    'Light novel': 2,
+                    'Visual novel': 3,
+                    'Novel': 4,
+                    'Original': 5,
+                    'Game': 6,
+                    'Web manga': 7,
+                    'Other': 0
+                }
+                feature_vector[i] = source_mapping.get(
+                    anime_info.get('source', 'Other'),
+                    0
+                )
 
-        # === GENRE FEATURES ===
-        elif feature.startswith('genre_'):
-            genre_name = feature.replace('genre_', '').replace('_', ' ').lower()
-            genres = anime_info.get('genres', [])
+            # === GENRE FEATURES ===
+            elif feature.startswith('genre_'):
+                genre_name = feature.replace('genre_', '').replace('_', ' ').lower()
+                genres = anime_info.get('genres', [])
 
-            if isinstance(genres, str):
-                genres = [g.strip() for g in genres.split(',')]
+                if isinstance(genres, str):
+                    genres = [g.strip() for g in genres.split(',')]
 
-            feature_vector[i] = 1 if any(
-                g.replace('-', ' ').lower() == genre_name for g in genres
-            ) else 0
+                feature_vector[i] = 1 if any(
+                    g.replace('-', ' ').lower() == genre_name for g in genres
+                ) else 0
 
-        # === STUDIO FEATURES ===
-        elif feature.startswith('studio_'):
-            studio_name = feature.replace('studio_', '').replace('_', ' ').lower()
-            studios = anime_info.get('studios', [])
+             # === STUDIO FEATURES ===
+            elif feature.startswith('studio_'):
+                studio_name = feature.replace('studio_', '').replace('_', ' ').lower()
+                studios = anime_info.get('studios', [])
 
-            if isinstance(studios, str):
-                studios = [s.strip() for s in studios.split(',')]
+                if isinstance(studios, str):
+                    studios = [s.strip() for s in studios.split(',')]
 
-            feature_vector[i] = 1 if any(
-                s.lower() == studio_name for s in studios
-            ) else 0
+                feature_vector[i] = 1 if any(
+                    s.lower() == studio_name for s in studios
+                ) else 0
 
-        # === CATEGORICAL FEATURES ===
-        elif feature.startswith('type_'):
-            feature_vector[i] = 1 if anime_info.get('type') == feature.replace('type_', '') else 0
+            # === CATEGORICAL FEATURES ===
+            elif feature.startswith('type_'):
+                feature_vector[i] = 1 if anime_info.get('type') == feature.replace('type_', '') else 0
 
-        elif feature.startswith('status_'):
-            feature_vector[i] = 1 if anime_info.get('status') == feature.replace('status_', '').replace('_', ' ') else 0
+            elif feature.startswith('status_'):
+                feature_vector[i] = 1 if anime_info.get('status') == feature.replace('status_', '').replace('_', ' ') else 0
 
-        elif feature.startswith('rating_'):
-            feature_vector[i] = 1 if anime_info.get('rating') == feature.replace('rating_', '').replace('_', '-') else 0
+            elif feature.startswith('rating_'):
+                feature_vector[i] = 1 if anime_info.get('rating') == feature.replace('rating_', '').replace('_', '-') else 0
 
-        elif feature.startswith('season_'):
-            feature_vector[i] = 1 if anime_info.get('season') == feature.replace('season_', '') else 0
+            elif feature.startswith('season_'):
+                feature_vector[i] = 1 if anime_info.get('season') == feature.replace('season_', '') else 0
 
-        elif feature.startswith('episode_category_'):
-            episodes = anime_info.get('episodes')
-            episodes = episodes if episodes is not None and episodes > 0 else 1
-            category = feature.replace('episode_category_', '')
+            elif feature.startswith('episode_category_'):
+                episodes = anime_info.get('episodes')
+                episodes = episodes if episodes is not None and episodes > 0 else 1
+                category = feature.replace('episode_category_', '')
 
-            if category == 'Movie_Special' and episodes <= 1:
-                feature_vector[i] = 1
-            elif category == 'Short' and 2 <= episodes <= 12:
-                feature_vector[i] = 1
-            elif category == 'Standard' and 13 <= episodes <= 26:
-                feature_vector[i] = 1
-            elif category == 'Long' and 27 <= episodes <= 50:
-                feature_vector[i] = 1
-            elif category == 'Very_Long' and episodes > 50:
-                feature_vector[i] = 1
+                if category == 'Movie_Special' and episodes <= 1:
+                    feature_vector[i] = 1
+                elif category == 'Short' and 2 <= episodes <= 12:
+                    feature_vector[i] = 1
+                elif category == 'Standard' and 13 <= episodes <= 26:
+                    feature_vector[i] = 1
+                elif category == 'Long' and 27 <= episodes <= 50:
+                    feature_vector[i] = 1
+                elif category == 'Very_Long' and episodes > 50:
+                    feature_vector[i] = 1
 
-        elif feature.startswith('popularity_tier_'):
-            popularity = anime_info.get('popularity') or 1000
-            tier = feature.replace('popularity_tier_', '')
+            elif feature.startswith('popularity_tier_'):
+                popularity = anime_info.get('popularity') or 1000
+                tier = feature.replace('popularity_tier_', '')
 
-            if tier == 'Top_Tier' and popularity <= 100:
-                feature_vector[i] = 1
-            elif tier == 'High' and 101 <= popularity <= 1000:
-                feature_vector[i] = 1
-            elif tier == 'Medium' and 1001 <= popularity <= 5000:
-                feature_vector[i] = 1
-            elif tier == 'Low' and popularity > 5000:
-                feature_vector[i] = 1
+                if tier == 'Top_Tier' and popularity <= 100:
+                    feature_vector[i] = 1
+                elif tier == 'High' and 101 <= popularity <= 1000:
+                    feature_vector[i] = 1
+                elif tier == 'Medium' and 1001 <= popularity <= 5000:
+                    feature_vector[i] = 1
+                elif tier == 'Low' and popularity > 5000:
+                    feature_vector[i] = 1
 
-    return feature_vector
+        return feature_vector
 
     
     def batch_predict(self, anime_list):
