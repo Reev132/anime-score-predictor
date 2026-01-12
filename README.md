@@ -7,5 +7,3 @@ A data analysis and machine learning project that predicts MyAnimeList (MAL) sco
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-
