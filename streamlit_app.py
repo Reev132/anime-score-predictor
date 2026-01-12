@@ -196,7 +196,9 @@ if st.session_state.prediction_history:
             st.caption(anime["title_english"])
         
         score = result["predicted_score"]
-        st.markdown(f'<div class="score-display">{score:.2f} / 10</div>', unsafe_allow_html=True)
+        # Add color coding to score
+        score_color = "#22c55e" if score >= 8 else "#eab308" if score >= 7 else "#ef4444"
+        st.markdown(f'<div class="score-display" style="color:{score_color}">{score:.2f} / 10</div>', unsafe_allow_html=True)
 
         low, high = result["confidence_interval"]
         st.info(f"95% confidence interval: **{low:.2f} – {high:.2f}**")
@@ -216,6 +218,10 @@ if st.session_state.prediction_history:
     with c3:
         st.metric("Model", result["model_used"])
         st.metric("RMSE", f"{result['model_rmse']:.3f}")
+        
+        # Add MAL link button
+        if anime.get("url"):
+            st.link_button("View on MAL", anime["url"], use_container_width=True)
 
         # Compare with actual score if available
         actual_score = anime.get("score")
@@ -257,6 +263,12 @@ if st.session_state.prediction_history:
             if anime.get("status"):
                 st.write("**Status:**")
                 st.write(anime["status"])
+        
+        # Add synopsis
+        if anime.get("synopsis"):
+            st.divider()
+            st.write("**Synopsis:**")
+            st.write(anime["synopsis"])
 
     st.divider()
 
