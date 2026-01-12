@@ -169,17 +169,24 @@ def analyze_genres(df):
     plt.figure(figsize=(12, 8))
     genres = [item[0] for item in sorted_genres]
     scores = [item[1]['avg_score'] for item in sorted_genres]
-    counts = [item[1]['count'] for item in sorted_genres]
-    
+
     bars = plt.barh(genres, scores, color='lightcoral', alpha=0.7)
     plt.xlabel('Average Score')
     plt.title('Average Score by Genre (Top 10 genres with 5+ anime)')
-    
-    # Add count annotations
-    for i, (bar, count) in enumerate(zip(bars, counts)):
-        plt.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height()/2, 
-                f'n={count}', va='center', fontsize=10)
-    
+
+    # Corrected Annotation Loop
+    for bar in bars:
+        width = bar.get_width()
+        plt.text(
+        width + 0.05,          # X position (slightly to the right of the bar)
+        bar.get_y() + bar.get_height()/2, # Y position (centered on the bar)
+        f'{width:.2f}',        # The formatted text (individual score)
+        va='center', 
+        fontsize=10, 
+        fontweight='bold'
+    )
+
+    plt.xlim(0, max(scores) + 1)   # Add some padding to the right for the labels
     plt.tight_layout()
     plt.savefig('genre_performance.png', dpi=300, bbox_inches='tight')
     plt.show()
