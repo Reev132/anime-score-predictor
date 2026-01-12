@@ -72,12 +72,6 @@ class AnimeScorePredictionInterface:
     def predict_score(self, anime_info):
         """
         Predict anime score from anime information
-        
-        Args:
-            anime_info (dict): Dictionary containing anime features
-        
-        Returns:
-            dict: Prediction results with score and confidence interval
         """
         print(f"\n🎯 Predicting score for: {anime_info.get('title', 'Unknown Anime')}")
         
@@ -149,13 +143,13 @@ class AnimeScorePredictionInterface:
             elif feature == 'year':
                 feature_vector[i] = anime_info.get('year', current_year)
             elif feature == 'members':
-                feature_vector[i] = anime_info.get('members', 50000)
+                feature_vector[i] = anime_info.get('members') or 50000
             elif feature == 'favorites':
-                feature_vector[i] = anime_info.get('favorites', 2000)
+                feature_vector[i] = anime_info.get('favorites') or 2000
             elif feature == 'scored_by':
-                feature_vector[i] = anime_info.get('scored_by', 25000)
+                feature_vector[i] = anime_info.get('scored_by') or 25000
             elif feature == 'popularity':
-                feature_vector[i] = anime_info.get('popularity', 1000)
+                feature_vector[i] = anime_info.get('popularity') or 1000
             elif feature == 'anime_age':
                 year = anime_info.get('year', current_year)
                 feature_vector[i] = current_year - year
@@ -163,9 +157,17 @@ class AnimeScorePredictionInterface:
                 year = anime_info.get('year', current_year)
                 feature_vector[i] = 1 if (current_year - year) <= 5 else 0
             elif feature == 'engagement_rate':
-                members = anime_info.get('members', 50000)
-                scored_by = anime_info.get('scored_by', 25000)
-                feature_vector[i] = scored_by / (members + 1)
+                members = anime_info.get('members')
+                scored_by = anime_info.get('scored_by')
+
+                # Handle None values (unrated / unreleased anime)
+                if members is None or members <= 0:
+                    members = 1
+                if scored_by is None or scored_by < 0:
+                    scored_by = 0
+
+                feature_vector[i] = scored_by / members
+
             elif feature == 'source_encoded':
                 source_mapping = {
                     'Manga': 1, 'Light novel': 2, 'Visual novel': 3, 'Novel': 4,
@@ -177,11 +179,6 @@ class AnimeScorePredictionInterface:
             # === GENRE FEATURES ===
             elif feature.startswith('genre_'):
                 genre_name = feature.replace('genre_', '').replace('_', ' ').replace('-', '-')
-                # Handle some common genre name variations
-                genre_variations = {
-                    'Slice of Life': ['Slice of Life', 'Slice_of_Life'],
-                    'Sci Fi': ['Sci-Fi', 'Sci_Fi', 'Science Fiction'],
-                }
                 
                 genres = anime_info.get('genres', [])
                 if isinstance(genres, str):
@@ -375,9 +372,9 @@ def demo_predictions():
     }
     
     # Make predictions
-    result1 = predictor.predict_score(anime1)
-    result2 = predictor.predict_score(anime2)
-    result3 = predictor.predict_score(anime3)
+    predictor.predict_score(anime1)
+    predictor.predict_score(anime2)
+    predictor.predict_score(anime3)
     
     # Compare them
     anime_comparison = [anime1, anime2, anime3]
