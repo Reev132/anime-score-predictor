@@ -1,1 +1,1 @@
-# anime-score-predictor
+# 🎌 Anime Score Predictor
