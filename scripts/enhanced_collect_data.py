@@ -34,20 +34,20 @@ class MegaAnimeCollector:
                 self.request_count += 1
 
                 if self.request_count % 100 == 0:
-                    print(f"🔄 Made {self.request_count} requests | Collected {len(self.anime_list)} anime so far...")
+                    print(f"Made {self.request_count} requests | Collected {len(self.anime_list)} anime so far...")
 
                 response = requests.get(url, timeout=10)
                 response.raise_for_status()
                 return response.json()
 
             except requests.exceptions.RequestException as e:
-                print(f"⚠️  Request failed (attempt {attempt + 1}): {e}")
+                print(f"Request failed (attempt {attempt + 1}): {e}")
                 if attempt < max_retries - 1:
                     wait_time = (attempt + 1) * 2
-                    print(f"🕐 Waiting {wait_time} seconds before retry...")
+                    print(f"Waiting {wait_time} seconds before retry...")
                     time.sleep(wait_time)
                 else:
-                    print(f"❌ Failed after {max_retries} attempts")
+                    print(f"Failed after {max_retries} attempts")
                     return None
         return None
 
@@ -88,7 +88,7 @@ class MegaAnimeCollector:
         """
         Collect top-rated anime (MORE PAGES!)
         """
-        print(f"📈 Collecting top-rated anime ({pages} pages = ~{pages * 25} anime)...")
+        print(f"Collecting top-rated anime ({pages} pages = ~{pages * 25} anime)...")
         for page in range(1, pages + 1):
             url = f"{self.base_url}/top/anime?page={page}&limit=25"
             data = self.safe_request(url)
@@ -98,13 +98,13 @@ class MegaAnimeCollector:
                 if anime['mal_id'] not in self.collected_ids:
                     self.anime_list.append(self.extract_anime_info(anime))
                     self.collected_ids.add(anime['mal_id'])
-            print(f"  ✅ Page {page}/{pages} - Total: {len(self.anime_list)} anime")
+            print(f"Page {page}/{pages} - Total: {len(self.anime_list)} anime")
 
     def collect_seasonal_anime(self, years: List[int], seasons: List[str]) -> None:
         """
         Collect seasonal anime (MORE YEARS, MORE PER SEASON!)
         """
-        print(f"🌸 Collecting seasonal anime from {len(years)} years...")
+        print(f"Collecting seasonal anime from {len(years)} years...")
         target_per_season = 30  # Increased from 20
         
         for year in years:
@@ -124,13 +124,13 @@ class MegaAnimeCollector:
                         season_count += 1
                         
                 if season_count > 0:
-                    print(f"  ✅ {year} {season}: +{season_count} anime (Total: {len(self.anime_list)})")
+                    print(f"{year} {season}: +{season_count} anime (Total: {len(self.anime_list)})")
 
     def collect_by_genre(self, genres: List[int], limit_per_genre: int = 100) -> None:
         """
         Collect anime by genre (MORE PER GENRE!)
         """
-        print(f"🏷️ Collecting anime by {len(genres)} genres...")
+        print(f"Collecting anime by {len(genres)} genres...")
         genre_names = {
             1: "Action", 2: "Adventure", 4: "Comedy", 8: "Drama",
             10: "Fantasy", 14: "Horror", 22: "Romance", 24: "Sci-Fi",
@@ -140,7 +140,7 @@ class MegaAnimeCollector:
         
         for genre_id in genres:
             genre_name = genre_names.get(genre_id, f"Genre_{genre_id}")
-            print(f"  🎭 Collecting {genre_name} anime...")
+            print(f"Collecting {genre_name} anime...")
             collected_for_genre = 0
             page = 1
             
@@ -162,16 +162,16 @@ class MegaAnimeCollector:
                         page_additions += 1
                         
                 if page_additions > 0:
-                    print(f"    📄 Page {page}: +{page_additions} (Genre total: {collected_for_genre})")
+                    print(f"Page {page}: +{page_additions} (Genre total: {collected_for_genre})")
                 page += 1
                 
-            print(f"  ✅ {genre_name}: {collected_for_genre} anime")
+            print(f"{genre_name}: {collected_for_genre} anime")
 
     def collect_by_popularity_tiers(self) -> None:
         """
         NEW: Collect anime from different popularity tiers
         """
-        print(f"🌟 Collecting anime from popularity tiers...")
+        print(f"Collecting anime from popularity tiers...")
         
         tiers = [
             (1, 500, "Top Tier"),
@@ -181,7 +181,7 @@ class MegaAnimeCollector:
         ]
         
         for min_pop, max_pop, tier_name in tiers:
-            print(f"  📊 {tier_name} (rank {min_pop}-{max_pop})...")
+            print(f"{tier_name} (rank {min_pop}-{max_pop})...")
             collected = 0
             target = 100
             page = 1
@@ -205,13 +205,13 @@ class MegaAnimeCollector:
                             break
                 page += 1
                 
-            print(f"    ✅ Collected {collected} from {tier_name}")
+            print(f"Collected {collected} from {tier_name}")
 
     def collect_by_type(self) -> None:
         """
         NEW: Ensure good coverage of all anime types
         """
-        print(f"📺 Collecting diverse anime types...")
+        print(f"Collecting diverse anime types...")
         
         types_targets = {
             'tv': 200,
@@ -222,7 +222,7 @@ class MegaAnimeCollector:
         }
         
         for anime_type, target in types_targets.items():
-            print(f"  🎬 Collecting {anime_type.upper()} anime...")
+            print(f"Collecting {anime_type.upper()} anime...")
             collected = 0
             page = 1
             
@@ -243,16 +243,16 @@ class MegaAnimeCollector:
                             break
                 page += 1
                 
-            print(f"    ✅ Collected {collected} {anime_type.upper()} anime")
+            print(f"Collected {collected} {anime_type.upper()} anime")
 
     def collect_score_ranges(self, score_ranges: List[tuple]) -> None:
         """
         Collect anime from different score ranges (BALANCED DATASET!)
         """
-        print(f"📊 Collecting anime from {len(score_ranges)} score ranges...")
+        print(f"Collecting anime from {len(score_ranges)} score ranges...")
         
         for min_score, max_score in score_ranges:
-            print(f"  🎯 Score range: {min_score} - {max_score}")
+            print(f"Score range: {min_score} - {max_score}")
             collected_in_range = 0
             page = 1
             target_per_range = 150  # Increased from 100
@@ -277,16 +277,16 @@ class MegaAnimeCollector:
                             break
                             
                 if page_additions > 0:
-                    print(f"    📄 Page {page}: +{page_additions}")
+                    print(f"Page {page}: +{page_additions}")
                 page += 1
                 
-            print(f"  ✅ Range {min_score}-{max_score}: {collected_in_range} anime")
+            print(f"Range {min_score}-{max_score}: {collected_in_range} anime")
 
     def collect_random_anime(self, count: int = 200) -> None:
         """
         Collect random anime for extra diversity (INCREASED!)
         """
-        print(f"🎲 Collecting {count} random anime for diversity...")
+        print(f"Collecting {count} random anime for diversity...")
         added = 0
         attempts = 0
         
@@ -305,9 +305,9 @@ class MegaAnimeCollector:
                 added += 1
                 
                 if added % 25 == 0:
-                    print(f"  ✅ Collected {added}/{count} random anime")
+                    print(f"Collected {added}/{count} random anime")
                     
-        print(f"🎉 Finished collecting {added} random anime")
+        print(f"Finished collecting {added} random anime")
 
     def save_dataset(self, filename: str = None) -> str:
         """
@@ -322,17 +322,17 @@ class MegaAnimeCollector:
         df = df.sort_values('score', ascending=False, na_position="last")
         df.to_csv(filename, index=False)
         
-        print(f"\n🎉 Dataset Collection Complete!")
-        print(f"📁 Saved as: {filename}")
-        print(f"📊 Total anime: {len(df)}")
+        print(f"\nDataset Collection Complete!")
+        print(f"Saved as: {filename}")
+        print(f"Total anime: {len(df)}")
         
         if not df['score'].dropna().empty:
-            print(f"⭐ Score range: {df['score'].dropna().min():.2f} - {df['score'].dropna().max():.2f}")
-            print(f"📈 Average score: {df['score'].dropna().mean():.2f}")
+            print(f"Score range: {df['score'].dropna().min():.2f} - {df['score'].dropna().max():.2f}")
+            print(f"Average score: {df['score'].dropna().mean():.2f}")
         
         # Score distribution
         if len(df) > 0:
-            print(f"\n📊 Score Distribution:")
+            print(f"\nScore Distribution:")
             print(f"  • 9.0+: {len(df[df['score'] >= 9.0])} anime")
             print(f"  • 8.0-8.9: {len(df[(df['score'] >= 8.0) & (df['score'] < 9.0)])} anime")
             print(f"  • 7.0-7.9: {len(df[(df['score'] >= 7.0) & (df['score'] < 8.0)])} anime")
@@ -340,7 +340,7 @@ class MegaAnimeCollector:
             print(f"  • <6.0: {len(df[df['score'] < 6.0])} anime")
             
             # Type distribution
-            print(f"\n📺 Type Distribution:")
+            print(f"\nType Distribution:")
             type_counts = df['type'].value_counts()
             for anime_type, count in type_counts.items():
                 print(f"  • {anime_type}: {count} anime")
@@ -352,8 +352,8 @@ def main():
     """
     MEGA data collection - target 3000+ anime!
     """
-    print("🚀 Starting MEGA Anime Data Collection!")
-    print("🎯 TARGET: 3000+ anime with scores")
+    print("Starting MEGA Anime Data Collection!")
+    print("TARGET: 3000+ anime with scores")
     print("=" * 70)
 
     collector = MegaAnimeCollector()

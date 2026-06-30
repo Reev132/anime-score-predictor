@@ -22,33 +22,33 @@ class ModelValidator:
     
     def __init__(self):
         """Initialize the validator"""
-        print("🧪 Initializing Model Validator...")
+        print(" Initializing Model Validator...")
         print("=" * 70)
         
         # Load the trained model
         try:
             self.predictor = AnimeScorePredictionInterface()
-            print(f"✅ Model loaded: {self.predictor.model_name}")
-            print(f"📊 Model RMSE: {self.predictor.model_results['test_rmse']:.3f}")
-            print(f"📊 Model R²: {self.predictor.model_results['test_r2']:.3f}")
+            print(f" Model loaded: {self.predictor.model_name}")
+            print(f" Model RMSE: {self.predictor.model_results['test_rmse']:.3f}")
+            print(f" Model R²: {self.predictor.model_results['test_r2']:.3f}")
         except Exception as e:
-            print(f"❌ Failed to load model: {e}")
+            print(f" Failed to load model: {e}")
             raise
         
         # Load the dataset
         csv_files = glob.glob("data/raw/*.csv")
         if not csv_files:
-            raise FileNotFoundError("❌ No CSV files found in data/raw/")
+            raise FileNotFoundError(" No CSV files found in data/raw/")
         
         self.dataset_path = max(csv_files, key=os.path.getctime)
-        print(f"\n📁 Loading dataset: {self.dataset_path}")
+        print(f"\n Loading dataset: {self.dataset_path}")
         
         self.df = pd.read_csv(self.dataset_path)
-        print(f"📊 Dataset loaded: {len(self.df)} anime")
+        print(f" Dataset loaded: {len(self.df)} anime")
         
         # Filter to only anime with actual scores
         self.df = self.df[self.df['score'].notna()].copy()
-        print(f"📊 Anime with scores: {len(self.df)}")
+        print(f" Anime with scores: {len(self.df)}")
         print("=" * 70)
     
     def prepare_anime_info(self, row):
@@ -97,7 +97,7 @@ class ModelValidator:
         Returns:
             DataFrame with results
         """
-        print("\n🧪 Testing model on all anime...")
+        print("\n Testing model on all anime...")
         print("=" * 70)
         
         results = []
@@ -106,7 +106,7 @@ class ModelValidator:
         for idx, row in self.df.iterrows():
             # Progress indicator
             if (idx + 1) % 100 == 0:
-                print(f"📊 Progress: {idx + 1}/{total} ({(idx + 1)/total*100:.1f}%)")
+                print(f" Progress: {idx + 1}/{total} ({(idx + 1)/total*100:.1f}%)")
             
             try:
                 # Prepare anime info
@@ -151,10 +151,10 @@ class ModelValidator:
                 })
                 
             except Exception as e:
-                print(f"⚠️  Error predicting {row.get('title', 'Unknown')}: {e}")
+                print(f"️  Error predicting {row.get('title', 'Unknown')}: {e}")
                 continue
         
-        print(f"✅ Completed: {len(results)}/{total} predictions")
+        print(f" Completed: {len(results)}/{total} predictions")
         print("=" * 70)
         
         self.results_df = pd.DataFrame(results)
@@ -167,7 +167,7 @@ class ModelValidator:
         Returns:
             Dictionary with metrics
         """
-        print("\n📊 Calculating Accuracy Metrics...")
+        print("\n Calculating Accuracy Metrics...")
         print("=" * 70)
         
         df = self.results_df
@@ -214,20 +214,20 @@ class ModelValidator:
         }
         
         # Print metrics
-        print(f"📊 Total Anime Tested: {metrics['total_anime']}")
-        print(f"\n🎯 Error Metrics:")
+        print(f" Total Anime Tested: {metrics['total_anime']}")
+        print(f"\n Error Metrics:")
         print(f"   Mean Absolute Error (MAE): {metrics['mae']:.3f}")
         print(f"   Root Mean Squared Error (RMSE): {metrics['rmse']:.3f}")
         print(f"   Mean Absolute Percentage Error (MAPE): {metrics['mape']:.2f}%")
         print(f"   R² Score: {metrics['r2']:.3f}")
         
-        print(f"\n✅ Accuracy Bands:")
+        print(f"\n Accuracy Bands:")
         print(f"   Within ±0.5 points: {metrics['within_0_5']:.1f}%")
         print(f"   Within ±1.0 points: {metrics['within_1_0']:.1f}%")
         print(f"   Within ±1.5 points: {metrics['within_1_5']:.1f}%")
         print(f"   Within Confidence Interval: {metrics['within_ci']:.1f}%")
         
-        print(f"\n📈 Prediction Bias:")
+        print(f"\n Prediction Bias:")
         print(f"   Direction Accuracy: {metrics['direction_accuracy']:.1f}%")
         print(f"   Over-predictions: {metrics['over_predictions']:.1f}%")
         print(f"   Under-predictions: {metrics['under_predictions']:.1f}%")
@@ -241,13 +241,13 @@ class ModelValidator:
         """
         Analyze accuracy by different categories
         """
-        print("\n📊 Category Analysis...")
+        print("\n Category Analysis...")
         print("=" * 70)
         
         df = self.results_df
         
         # Analyze by type
-        print("\n🎬 Accuracy by Anime Type:")
+        print("\n Accuracy by Anime Type:")
         type_analysis = df.groupby('type').agg({
             'absolute_error': ['mean', 'count']
         }).round(3)
@@ -256,7 +256,7 @@ class ModelValidator:
                 print(f"   {anime_type}: MAE = {row[('absolute_error', 'mean')]:.3f} (n={int(row[('absolute_error', 'count')])})")
         
         # Analyze by score range
-        print("\n⭐ Accuracy by Score Range:")
+        print("\n Accuracy by Score Range:")
         df['score_range'] = pd.cut(df['actual_score'], 
                                     bins=[0, 6, 7, 8, 10], 
                                     labels=['Low (0-6)', 'Medium (6-7)', 'Good (7-8)', 'Excellent (8-10)'])
@@ -267,12 +267,12 @@ class ModelValidator:
             print(f"   {score_range}: MAE = {row[('absolute_error', 'mean')]:.3f} (n={int(row[('absolute_error', 'count')])})")
         
         # Best and worst predictions
-        print("\n🏆 Best Predictions (smallest error):")
+        print("\n Best Predictions (smallest error):")
         best = df.nsmallest(5, 'absolute_error')
         for _, row in best.iterrows():
             print(f"   {row['title']}: Actual={row['actual_score']:.2f}, Predicted={row['predicted_score']:.2f}, Error={row['absolute_error']:.3f}")
         
-        print("\n😬 Worst Predictions (largest error):")
+        print("\n Worst Predictions (largest error):")
         worst = df.nlargest(5, 'absolute_error')
         for _, row in worst.iterrows():
             print(f"   {row['title']}: Actual={row['actual_score']:.2f}, Predicted={row['predicted_score']:.2f}, Error={row['absolute_error']:.3f}")
@@ -283,7 +283,7 @@ class ModelValidator:
         """
         Create comprehensive visualization plots
         """
-        print("\n📊 Creating Visualizations...")
+        print("\n Creating Visualizations...")
         
         df = self.results_df
         
@@ -379,14 +379,14 @@ class ModelValidator:
         # Save figure
         output_file = 'model_validation_results.png'
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"✅ Visualizations saved: {output_file}")
+        print(f" Visualizations saved: {output_file}")
         plt.show()
     
     def save_results(self):
         """
         Save results to CSV file
         """
-        print("\n💾 Saving Results...")
+        print("\n Saving Results...")
         
         # Create output filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -398,8 +398,8 @@ class ModelValidator:
         # Save to CSV
         self.results_df_sorted.to_csv(output_file, index=False)
         
-        print(f"✅ Results saved: {output_file}")
-        print(f"📊 Columns: {', '.join(self.results_df.columns.tolist())}")
+        print(f" Results saved: {output_file}")
+        print(f" Columns: {', '.join(self.results_df.columns.tolist())}")
         
         return output_file
     
@@ -407,7 +407,7 @@ class ModelValidator:
         """
         Generate a comprehensive text report
         """
-        print("\n📄 Generating Comprehensive Report...")
+        print("\n Generating Comprehensive Report...")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_file = f"model_validation_report_{timestamp}.txt"
@@ -449,20 +449,20 @@ class ModelValidator:
             
             # Interpretation based on metrics
             if self.metrics['within_1_0'] >= 80:
-                f.write("✅ EXCELLENT: Model predictions are highly accurate (80%+ within 1 point)\n\n")
+                f.write(" EXCELLENT: Model predictions are highly accurate (80%+ within 1 point)\n\n")
             elif self.metrics['within_1_0'] >= 70:
-                f.write("👍 GOOD: Model predictions are reliable (70%+ within 1 point)\n\n")
+                f.write(" GOOD: Model predictions are reliable (70%+ within 1 point)\n\n")
             elif self.metrics['within_1_0'] >= 60:
-                f.write("😊 FAIR: Model predictions are decent (60%+ within 1 point)\n\n")
+                f.write(" FAIR: Model predictions are decent (60%+ within 1 point)\n\n")
             else:
-                f.write("⚠️  NEEDS IMPROVEMENT: Model accuracy below 60% (within 1 point)\n\n")
+                f.write("️  NEEDS IMPROVEMENT: Model accuracy below 60% (within 1 point)\n\n")
             
             if abs(self.metrics['over_predictions'] - 50) < 10:
-                f.write("✅ Model is well-balanced (no significant over/under prediction bias)\n\n")
+                f.write(" Model is well-balanced (no significant over/under prediction bias)\n\n")
             elif self.metrics['over_predictions'] > 60:
-                f.write("⚠️  Model tends to over-predict scores\n\n")
+                f.write("️  Model tends to over-predict scores\n\n")
             else:
-                f.write("⚠️  Model tends to under-predict scores\n\n")
+                f.write("️  Model tends to under-predict scores\n\n")
             
             f.write("=" * 80 + "\n")
             f.write("RECOMMENDATIONS\n")
@@ -482,7 +482,7 @@ class ModelValidator:
             
             f.write("=" * 80 + "\n")
             
-        print(f"✅ Report saved: {report_file}")
+        print(f" Report saved: {report_file}")
         
         return report_file
     
@@ -491,7 +491,7 @@ class ModelValidator:
         Run the complete validation pipeline
         """
         print("\n" + "=" * 70)
-        print("🚀 STARTING FULL MODEL VALIDATION")
+        print(" STARTING FULL MODEL VALIDATION")
         print("=" * 70)
         
         # Test all anime
@@ -513,17 +513,17 @@ class ModelValidator:
         report_file = self.generate_report()
         
         print("\n" + "=" * 70)
-        print("✅ VALIDATION COMPLETE!")
+        print(" VALIDATION COMPLETE!")
         print("=" * 70)
-        print(f"\n📊 Summary:")
+        print(f"\n Summary:")
         print(f"   Total Anime: {metrics['total_anime']}")
         print(f"   MAE: {metrics['mae']:.3f}")
         print(f"   Accuracy (±1.0): {metrics['within_1_0']:.1f}%")
-        print(f"\n📁 Files Generated:")
+        print(f"\n Files Generated:")
         print(f"   - {csv_file}")
         print(f"   - {report_file}")
         print(f"   - model_validation_results.png")
-        print("\n🎉 Use these results for your portfolio and README!")
+        print("\n Use these results for your portfolio and README!")
         print("=" * 70 + "\n")
 
 

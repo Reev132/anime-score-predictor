@@ -18,10 +18,10 @@ class AnimeScorePredictionInterface:
             # Find the most recent model
             model_files = glob.glob("models/*.joblib")
             if not model_files:
-                raise FileNotFoundError("❌ No trained models found in models/ directory")
+                raise FileNotFoundError(" No trained models found in models/ directory")
             model_path = max(model_files, key=os.path.getctime)
         
-        print(f"📁 Loading model from: {model_path}")
+        print(f" Loading model from: {model_path}")
         
         # Load model package
         self.model_package = joblib.load(model_path)
@@ -31,15 +31,15 @@ class AnimeScorePredictionInterface:
         self.feature_columns = self.model_package['feature_columns']
         self.model_results = self.model_package['model_results']
         
-        print(f"🤖 Loaded model: {self.model_name}")
-        print(f"📊 Model performance: RMSE = {self.model_results['test_rmse']:.3f}, R² = {self.model_results['test_r2']:.3f}")
-        print(f"🔢 Expected features: {len(self.feature_columns)}")
+        print(f" Loaded model: {self.model_name}")
+        print(f" Model performance: RMSE = {self.model_results['test_rmse']:.3f}, R² = {self.model_results['test_r2']:.3f}")
+        print(f" Expected features: {len(self.feature_columns)}")
     
     def create_prediction_template(self):
         """
         Create a template showing what features are needed
         """
-        print("\n📝 Anime Prediction Template:")
+        print("\n Anime Prediction Template:")
         print("=" * 50)
         
         template = {
@@ -73,7 +73,7 @@ class AnimeScorePredictionInterface:
         """
         Predict anime score from anime information
         """
-        print(f"\n🎯 Predicting score for: {anime_info.get('title', 'Unknown Anime')}")
+        print(f"\n Predicting score for: {anime_info.get('title', 'Unknown Anime')}")
         
         # Create feature vector
         feature_vector = self._create_feature_vector(anime_info)
@@ -106,21 +106,21 @@ class AnimeScorePredictionInterface:
         }
         
         # Display prediction
-        print(f"🎌 Predicted Score: {result['predicted_score']:.2f}")
-        print(f"📊 95% Confidence Interval: {result['confidence_interval'][0]:.2f} - {result['confidence_interval'][1]:.2f}")
-        print(f"🤖 Model: {result['model_used']} (RMSE: {result['model_rmse']})")
+        print(f" Predicted Score: {result['predicted_score']:.2f}")
+        print(f" 95% Confidence Interval: {result['confidence_interval'][0]:.2f} - {result['confidence_interval'][1]:.2f}")
+        print(f" Model: {result['model_used']} (RMSE: {result['model_rmse']})")
         
         # Score interpretation
         if predicted_score >= 8.5:
-            print("✨ Interpretation: Excellent anime! Likely to be highly rated by viewers.")
+            print(" Interpretation: Excellent anime! Likely to be highly rated by viewers.")
         elif predicted_score >= 7.5:
-            print("👍 Interpretation: Very good anime. Should be well-received.")
+            print(" Interpretation: Very good anime. Should be well-received.")
         elif predicted_score >= 6.5:
-            print("😊 Interpretation: Good anime. Average to above-average reception expected.")
+            print(" Interpretation: Good anime. Average to above-average reception expected.")
         elif predicted_score >= 5.5:
-            print("😐 Interpretation: Mediocre anime. Mixed reception likely.")
+            print(" Interpretation: Mediocre anime. Mixed reception likely.")
         else:
-            print("😬 Interpretation: Below average anime. May struggle with ratings.")
+            print(" Interpretation: Below average anime. May struggle with ratings.")
         
         return result
     
@@ -274,7 +274,7 @@ class AnimeScorePredictionInterface:
         """
         Compare predicted scores for multiple anime
         """
-        print("\n🏆 Anime Score Comparison:")
+        print("\n Anime Score Comparison:")
         print("=" * 60)
         
         results = self.batch_predict(anime_list)
@@ -298,21 +298,21 @@ def demo_predictions():
     """
     Demo function showing how to use the prediction interface
     """
-    print("🚀 Anime Score Predictor Demo!")
+    print(" Anime Score Predictor Demo!")
     print("=" * 40)
     
     # Load the predictor
     try:
         predictor = AnimeScorePredictionInterface()
     except FileNotFoundError:
-        print("❌ No trained model found. Please run the ML pipeline first!")
+        print(" No trained model found. Please run the ML pipeline first!")
         return
     
     # Show template
     template = predictor.create_prediction_template()
     
     # Example predictions
-    print("\n🎬 Example Predictions:")
+    print("\n Example Predictions:")
     
     # Example 1: High-budget action anime
     anime1 = {

@@ -39,14 +39,14 @@ class AnimeScorePredictor:
             # Find the most recent CSV file
             csv_files = glob.glob("data/raw/*.csv")
             if not csv_files:
-                raise FileNotFoundError("❌ No CSV files found in data/raw/")
+                raise FileNotFoundError(" No CSV files found in data/raw/")
             csv_file = max(csv_files, key=os.path.getctime)
         
-        print(f"📁 Loading data from: {csv_file}")
+        print(f" Loading data from: {csv_file}")
         self.df = pd.read_csv(csv_file)
         
-        print(f"📊 Dataset loaded: {self.df.shape[0]} anime, {self.df.shape[1]} features")
-        print(f"🎯 Score range: {self.df[self.target_column].min():.2f} - {self.df[self.target_column].max():.2f}")
+        print(f" Dataset loaded: {self.df.shape[0]} anime, {self.df.shape[1]} features")
+        print(f" Score range: {self.df[self.target_column].min():.2f} - {self.df[self.target_column].max():.2f}")
         
         return self.df
     
@@ -54,14 +54,14 @@ class AnimeScorePredictor:
         """
         Advanced preprocessing and feature engineering
         """
-        print("🔧 Starting data preprocessing and feature engineering...")
+        print(" Starting data preprocessing and feature engineering...")
         
         # Create a copy for processing
         df_processed = self.df.copy()
         
         # Remove rows without scores (our target)
         df_processed = df_processed[df_processed[self.target_column].notna()]
-        print(f"📊 After removing missing scores: {len(df_processed)} anime")
+        print(f" After removing missing scores: {len(df_processed)} anime")
         
         # === NUMERICAL FEATURES ===
         numerical_features = ['episodes', 'year', 'members', 'favorites', 'scored_by', 'popularity', 'rank']
@@ -71,10 +71,10 @@ class AnimeScorePredictor:
             if col in df_processed.columns:
                 median_val = df_processed[col].median()
                 df_processed[col] = df_processed[col].fillna(median_val)
-                print(f"  📈 Filled {col} missing values with median: {median_val}")
+                print(f"   Filled {col} missing values with median: {median_val}")
         
         # === FEATURE ENGINEERING ===
-        print("⚡ Engineering new features...")
+        print(" Engineering new features...")
         
         # 1. Age of anime (how old is it?)
         current_year = datetime.now().year
@@ -103,7 +103,7 @@ class AnimeScorePredictor:
             df_processed['engagement_rate'] = df_processed['scored_by'] / (df_processed['members'] + 1)  # +1 to avoid division by zero
         
         # === CATEGORICAL FEATURES ===
-        print("🏷️ Processing categorical features...")
+        print("️ Processing categorical features...")
         
         # 1. Basic categorical encoding
         categorical_cols = ['type', 'status', 'source', 'rating', 'season', 'episode_category', 'popularity_tier']
@@ -113,7 +113,7 @@ class AnimeScorePredictor:
         
         # 2. Genre processing (one-hot encoding)
         if 'genres' in df_processed.columns:
-            print("  🎭 Processing genres...")
+            print("   Processing genres...")
             # Get all unique genres
             all_genres = set()
             for genres_str in df_processed['genres'].dropna():
@@ -127,11 +127,11 @@ class AnimeScorePredictor:
                     df_processed[f'genre_{genre.replace(" ", "_").replace("-", "_")}'] = \
                         df_processed['genres'].str.contains(genre, na=False).astype(int)
             
-            print(f"    ✅ Created {len(all_genres)} genre features")
+            print(f"     Created {len(all_genres)} genre features")
         
         # 3. Studio processing (encode top studios, group others)
         if 'studios' in df_processed.columns:
-            print("  🏢 Processing studios...")
+            print("   Processing studios...")
             # Get studio counts
             all_studios = []
             for studios_str in df_processed['studios'].dropna():
@@ -148,7 +148,7 @@ class AnimeScorePredictor:
                     df_processed[f'studio_{studio.replace(" ", "_").replace("-", "_")}'] = \
                         df_processed['studios'].str.contains(studio, na=False, regex=False).astype(int)
             
-            print(f"    ✅ Created {len(top_studios)} studio features")
+            print(f"     Created {len(top_studios)} studio features")
         
         # 4. Source material encoding
         if 'source' in df_processed.columns:
@@ -190,10 +190,10 @@ class AnimeScorePredictor:
         self.df_processed = df_processed
         self.feature_columns = feature_columns
         
-        print(f"✅ Preprocessing complete!")
-        print(f"📊 Final dataset: {len(df_processed)} anime")
-        print(f"🔢 Total features: {len(feature_columns)}")
-        print(f"📈 Features include: numerical ({len([c for c in feature_columns if not c.startswith(('genre_', 'studio_', 'type_', 'status_', 'rating_', 'season_', 'episode_', 'popularity_'))])}), genres ({len(genre_cols)}), studios ({len(studio_cols)}), categorical ({len(feature_columns) - len([c for c in feature_columns if not c.startswith(('genre_', 'studio_', 'type_', 'status_', 'rating_', 'season_', 'episode_', 'popularity_'))]) - len(genre_cols) - len(studio_cols)})")
+        print(f" Preprocessing complete!")
+        print(f" Final dataset: {len(df_processed)} anime")
+        print(f" Total features: {len(feature_columns)}")
+        print(f" Features include: numerical ({len([c for c in feature_columns if not c.startswith(('genre_', 'studio_', 'type_', 'status_', 'rating_', 'season_', 'episode_', 'popularity_'))])}), genres ({len(genre_cols)}), studios ({len(studio_cols)}), categorical ({len(feature_columns) - len([c for c in feature_columns if not c.startswith(('genre_', 'studio_', 'type_', 'status_', 'rating_', 'season_', 'episode_', 'popularity_'))]) - len(genre_cols) - len(studio_cols)})")
         
         return df_processed
     
@@ -201,7 +201,7 @@ class AnimeScorePredictor:
         """
         Prepare X and y for training
         """
-        print("🎯 Preparing training data...")
+        print(" Preparing training data...")
         
         # Get features and target
         X = self.df_processed[self.feature_columns].copy()
@@ -223,9 +223,9 @@ class AnimeScorePredictor:
         self.y_train, self.y_test = y_train, y_test
         self.X_train_df, self.X_test_df = X_train, X_test  # Keep unscaled for tree models
         
-        print(f"📊 Training set: {len(X_train)} anime")
-        print(f"📊 Test set: {len(X_test)} anime")
-        print(f"🎯 Target distribution - Train: {y_train.mean():.2f}±{y_train.std():.2f}, Test: {y_test.mean():.2f}±{y_test.std():.2f}")
+        print(f" Training set: {len(X_train)} anime")
+        print(f" Test set: {len(X_test)} anime")
+        print(f" Target distribution - Train: {y_train.mean():.2f}±{y_train.std():.2f}, Test: {y_test.mean():.2f}±{y_test.std():.2f}")
         
         return X_train_scaled, X_test_scaled, y_train, y_test
     
@@ -233,7 +233,7 @@ class AnimeScorePredictor:
         """
         Train multiple models and compare performance
         """
-        print("🤖 Training multiple models...")
+        print(" Training multiple models...")
         
         # Define models to try
         models_to_train = {
@@ -248,7 +248,7 @@ class AnimeScorePredictor:
         results = {}
         
         for name, model in models_to_train.items():
-            print(f"  🔄 Training {name}...")
+            print(f"   Training {name}...")
             
             # Use scaled data for linear models and SVR, unscaled for tree models
             if name in ['Linear Regression', 'Ridge Regression', 'Lasso Regression', 'Support Vector Regression']:
@@ -290,7 +290,7 @@ class AnimeScorePredictor:
                 'test_predictions': test_pred
             }
             
-            print(f"    ✅ {name}: Test RMSE = {test_rmse:.3f}, Test R² = {test_r2:.3f}, CV RMSE = {cv_rmse:.3f}")
+            print(f"     {name}: Test RMSE = {test_rmse:.3f}, Test R² = {test_r2:.3f}, CV RMSE = {cv_rmse:.3f}")
         
         self.models = results
         
@@ -299,7 +299,7 @@ class AnimeScorePredictor:
         self.best_model = results[best_model_name]['model']
         self.best_model_name = best_model_name
         
-        print(f"\n🏆 Best model: {best_model_name} (CV RMSE: {results[best_model_name]['cv_rmse']:.3f})")
+        print(f"\n Best model: {best_model_name} (CV RMSE: {results[best_model_name]['cv_rmse']:.3f})")
         
         return results
     
@@ -307,7 +307,7 @@ class AnimeScorePredictor:
         """
         Create comprehensive evaluation plots and metrics
         """
-        print("📊 Creating model evaluation visualizations...")
+        print(" Creating model evaluation visualizations...")
         
         # Create comparison plots
         fig, axes = plt.subplots(2, 3, figsize=(18, 12))
@@ -403,10 +403,10 @@ class AnimeScorePredictor:
         plt.show()
         
         # Print detailed results
-        print(f"\n📈 Detailed Model Results:")
+        print(f"\n Detailed Model Results:")
         print("="*80)
         for name, results in self.models.items():
-            print(f"\n🤖 {name}:")
+            print(f"\n {name}:")
             print(f"  Train RMSE: {results['train_rmse']:.4f}")
             print(f"  Test RMSE:  {results['test_rmse']:.4f}")
             print(f"  CV RMSE:    {results['cv_rmse']:.4f}")
@@ -418,11 +418,11 @@ class AnimeScorePredictor:
             # Overfitting check
             overfit_score = results['train_rmse'] / results['test_rmse']
             if overfit_score < 0.8:
-                print(f"  📊 Status: Possibly underfitting (train/test RMSE ratio: {overfit_score:.3f})")
+                print(f"   Status: Possibly underfitting (train/test RMSE ratio: {overfit_score:.3f})")
             elif overfit_score > 1.2:
-                print(f"  ⚠️  Status: Possibly overfitting (train/test RMSE ratio: {overfit_score:.3f})")
+                print(f"  ️  Status: Possibly overfitting (train/test RMSE ratio: {overfit_score:.3f})")
             else:
-                print(f"  ✅ Status: Good balance (train/test RMSE ratio: {overfit_score:.3f})")
+                print(f"   Status: Good balance (train/test RMSE ratio: {overfit_score:.3f})")
     
     def save_model(self, filename=None):
         """
@@ -445,7 +445,7 @@ class AnimeScorePredictor:
         }
         
         joblib.dump(model_package, filename)
-        print(f"💾 Best model ({self.best_model_name}) saved to: {filename}")
+        print(f" Best model ({self.best_model_name}) saved to: {filename}")
         
         return filename
     
@@ -461,7 +461,7 @@ def main():
     """
     Main ML pipeline execution
     """
-    print("🤖 Starting Anime Score Prediction ML Pipeline!")
+    print(" Starting Anime Score Prediction ML Pipeline!")
     print("=" * 60)
     
     # Initialize the predictor
@@ -483,12 +483,12 @@ def main():
     # Save the best model
     model_file = predictor.save_model()
     
-    print(f"\n🎉 ML Pipeline Complete!")
-    print(f"🏆 Best model: {predictor.best_model_name}")
-    print(f"📊 Test RMSE: {results[predictor.best_model_name]['test_rmse']:.3f}")
-    print(f"📊 Test R²: {results[predictor.best_model_name]['test_r2']:.3f}")
-    print(f"💾 Model saved: {model_file}")
-    print(f"📈 Evaluation plots saved: model_evaluation.png")
+    print(f"\n ML Pipeline Complete!")
+    print(f" Best model: {predictor.best_model_name}")
+    print(f" Test RMSE: {results[predictor.best_model_name]['test_rmse']:.3f}")
+    print(f" Test R²: {results[predictor.best_model_name]['test_r2']:.3f}")
+    print(f" Model saved: {model_file}")
+    print(f" Evaluation plots saved: model_evaluation.png")
     
     return predictor
 

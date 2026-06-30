@@ -126,13 +126,13 @@ def create_visualizations(df):
     plt.savefig('anime_analysis_dashboard.png', dpi=300, bbox_inches='tight')
     plt.show()
     
-    print("💾 Dashboard saved as 'anime_analysis_dashboard.png'")
+    print(" Dashboard saved as 'anime_analysis_dashboard.png'")
 
 def analyze_genres(df):
     """
     Deep dive into genre analysis
     """
-    print("\n🏷️ Genre Analysis:")
+    print("\n️ Genre Analysis:")
     
     # Extract all genres
     all_genres = []
@@ -142,12 +142,12 @@ def analyze_genres(df):
     
     # Count genres
     genre_counts = pd.Series(all_genres).value_counts()
-    print(f"📊 Top 15 Most Common Genres:")
+    print(f" Top 15 Most Common Genres:")
     for i, (genre, count) in enumerate(genre_counts.head(15).items()):
         print(f"  {i+1:2d}. {genre}: {count} ({count/len(df)*100:.1f}%)")
     
     # Analyze genre performance
-    print(f"\n⭐ Genre Performance Analysis:")
+    print(f"\n Genre Performance Analysis:")
     genre_scores = {}
     for genre in genre_counts.head(10).index:
         genre_anime = df[df['genres'].str.contains(genre, na=False)]
@@ -197,16 +197,16 @@ def analyze_studios(df):
     """
     Analyze studio performance
     """
-    print(f"\n🏢 Studio Analysis:")
+    print(f"\n Studio Analysis:")
     
     # Count studios
     studio_counts = df['studios'].value_counts()
-    print(f"📊 Top 10 Most Prolific Studios:")
+    print(f" Top 10 Most Prolific Studios:")
     for i, (studio, count) in enumerate(studio_counts.head(10).items()):
         print(f"  {i+1:2d}. {studio}: {count} anime")
     
     # Studio performance (only studios with 3+ anime)
-    print(f"\n⭐ Studio Performance (3+ anime):")
+    print(f"\n Studio Performance (3+ anime):")
     studio_scores = {}
     for studio in studio_counts.index:
         if studio_counts[studio] >= 3:
@@ -228,7 +228,7 @@ def analyze_temporal_patterns(df):
     """
     Analyze patterns over time
     """
-    print(f"\n📅 Temporal Analysis:")
+    print(f"\n Temporal Analysis:")
     
     # Score trends by year
     df_year = df[df['year'].notna()].copy()
@@ -237,12 +237,12 @@ def analyze_temporal_patterns(df):
     # Only years with at least 3 anime
     year_stats = year_stats[year_stats['count'] >= 3]
     
-    print(f"📈 Average Score by Year (3+ anime):")
+    print(f" Average Score by Year (3+ anime):")
     for _, row in year_stats.sort_values('mean', ascending=False).head(10).iterrows():
         print(f"  {int(row['year'])}: {row['mean']:.2f} avg (n={row['count']})")
     
     # Episode count analysis
-    print(f"\n📺 Episode Count Analysis:")
+    print(f"\n Episode Count Analysis:")
     df_episodes = df[df['episodes'].notna() & (df['episodes'] > 0)].copy()
     
     # Create episode bins
@@ -259,21 +259,21 @@ def generate_insights(df):
     """
     Generate key insights from the data
     """
-    print(f"\n🔍 Key Insights:")
+    print(f"\n Key Insights:")
     
     # Correlation analysis
     numeric_cols = ['score', 'rank', 'popularity', 'members', 'episodes', 'year']
     correlation_data = df[numeric_cols].corr()['score'].sort_values(key=abs, ascending=False)
     
-    print(f"📊 Correlations with Score:")
+    print(f" Correlations with Score:")
     for col, corr in correlation_data.items():
         if col != 'score' and not pd.isna(corr):
-            direction = "📈 Positive" if corr > 0 else "📉 Negative"
+            direction = " Positive" if corr > 0 else " Negative"
             strength = "Strong" if abs(corr) > 0.5 else "Moderate" if abs(corr) > 0.3 else "Weak"
             print(f"  {col}: {corr:.3f} ({direction}, {strength})")
     
     # Identify patterns
-    print(f"\n🎯 Interesting Patterns:")
+    print(f"\n Interesting Patterns:")
     
     # High scoring anime characteristics
     top_anime = df.nlargest(20, 'score')
@@ -304,8 +304,8 @@ def generate_insights(df):
     print(f"  • Average episode count: {df['episodes'].mean():.1f}")
     print(f"  • Most popular type: {df['type'].mode().iloc[0]}")
     
-    print(f"\n✨ Your dataset is ready for machine learning!")
-    print(f"🎯 Next step: Build your prediction model!")
+    print(f"\n Your dataset is ready for machine learning!")
+    print(f" Next step: Build your prediction model!")
 
 def main():
     """
@@ -317,20 +317,20 @@ def main():
     
     csv_files = glob.glob("data/raw/*.csv")
     if not csv_files:
-        print("❌ No CSV files found in data/raw/")
+        print(" No CSV files found in data/raw/")
         print("Make sure you've run collect_starter_data.py first!")
         return
     
     # Use the most recent file
     latest_file = max(csv_files, key=os.path.getctime)
-    print(f"📁 Using file: {latest_file}")
+    print(f" Using file: {latest_file}")
     
     # Run the analysis
     df = analyze_anime_dataset(latest_file)
     
-    print(f"\n🚀 Analysis complete! Check the generated charts!")
-    print(f"📊 Dashboard saved as 'anime_analysis_dashboard.png'")
-    print(f"🏷️ Genre analysis saved as 'genre_performance.png'")
+    print(f"\n Analysis complete! Check the generated charts!")
+    print(f" Dashboard saved as 'anime_analysis_dashboard.png'")
+    print(f"️ Genre analysis saved as 'genre_performance.png'")
     
     return df
 

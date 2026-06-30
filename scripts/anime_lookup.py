@@ -29,8 +29,8 @@ class AnimeAPIClient:
         # Create cache directory if it doesn't exist
         os.makedirs(cache_dir, exist_ok=True)
         
-        print(f"🎌 Jikan API Client initialized")
-        print(f"📁 Cache directory: {cache_dir}")
+        print(f" Jikan API Client initialized")
+        print(f" Cache directory: {cache_dir}")
     
     def _sanitize_cache_key(self, cache_key: str) -> str:
         """Sanitize cache key to be a valid filename"""
@@ -73,7 +73,7 @@ class AnimeAPIClient:
             
             return cache_data.get('data')
         except Exception as e:
-            print(f"⚠️  Error loading cache: {e}")
+            print(f"️  Error loading cache: {e}")
             return None
     
     def _save_to_cache(self, cache_key: str, data: Dict) -> None:
@@ -94,7 +94,7 @@ class AnimeAPIClient:
             with open(cache_path, 'w', encoding='utf-8') as f:
                 json.dump(cache_data, f)
         except Exception as e:
-            print(f"⚠️  Error saving to cache: {e}")
+            print(f"️  Error saving to cache: {e}")
     
     def _rate_limit(self) -> None:
         """Implement rate limiting to respect API limits"""
@@ -147,7 +147,7 @@ class AnimeAPIClient:
             return data.get('data')
         
         except requests.exceptions.RequestException as e:
-            print(f"❌ API request failed: {e}")
+            print(f" API request failed: {e}")
             return None
     
     def search_anime_by_name(self, anime_name: str, exact_match: bool = False) -> Optional[Dict]:
@@ -161,7 +161,7 @@ class AnimeAPIClient:
         Returns:
             Dictionary with detailed anime information or None if not found
         """
-        print(f"🔍 Searching for anime: {anime_name}")
+        print(f" Searching for anime: {anime_name}")
         
         # Search for the anime
         search_results = self._make_request(
@@ -171,7 +171,7 @@ class AnimeAPIClient:
         )
         
         if not search_results or len(search_results) == 0:
-            print(f"❌ No anime found with name: {anime_name}")
+            print(f" No anime found with name: {anime_name}")
             return None
         
         # Try to find best match
@@ -185,7 +185,7 @@ class AnimeAPIClient:
             # Check for exact match first
             if title == anime_name_lower or title_english == anime_name_lower:
                 best_match = anime
-                print(f"✅ Found exact match: {anime.get('title')}")
+                print(f" Found exact match: {anime.get('title')}")
                 break
             
             # Check if search term is in title
@@ -196,7 +196,7 @@ class AnimeAPIClient:
         # If no good match, use first result
         if best_match is None:
             best_match = search_results[0]
-            print(f"⚠️  No exact match, using: {best_match.get('title')}")
+            print(f"️  No exact match, using: {best_match.get('title')}")
         
         # Get the MAL ID and fetch full details
         mal_id = best_match['mal_id']
@@ -214,7 +214,7 @@ class AnimeAPIClient:
         Returns:
             Dictionary with complete anime information
         """
-        print(f"📺 Fetching anime details for MAL ID: {mal_id}")
+        print(f" Fetching anime details for MAL ID: {mal_id}")
         
         anime_data = self._make_request(f"anime/{mal_id}", use_cache=True)
         
@@ -288,7 +288,7 @@ class AnimeAPIClient:
         Returns:
             List of anime suggestions with basic info
         """
-        print(f"💡 Getting suggestions for: {query}")
+        print(f" Getting suggestions for: {query}")
         
         search_results = self._make_request(
             "anime",
@@ -313,7 +313,7 @@ class AnimeAPIClient:
                 'status': anime.get('status', ''),
             })
         
-        print(f"✅ Found {len(suggestions)} suggestions")
+        print(f" Found {len(suggestions)} suggestions")
         return suggestions
     
     def estimate_missing_features(self, anime_data: Dict) -> Dict:
@@ -328,7 +328,7 @@ class AnimeAPIClient:
         Returns:
             Updated anime data with estimated values
         """
-        print("📊 Estimating missing features...")
+        print(" Estimating missing features...")
         
         # Default estimations based on anime characteristics
         if anime_data.get('members') is None or anime_data.get('members') == 0:
@@ -369,7 +369,7 @@ class AnimeAPIClient:
             else:
                 anime_data['episodes'] = 0
         
-        print("✅ Features estimated successfully")
+        print(" Features estimated successfully")
         return anime_data
     
     def get_full_anime_info_for_prediction(self, anime_name: str) -> Optional[Dict]:
@@ -383,19 +383,19 @@ class AnimeAPIClient:
         Returns:
             Complete anime data ready for ML prediction, or None if not found
         """
-        print(f"🎬 Fetching complete anime info for: {anime_name}")
+        print(f" Fetching complete anime info for: {anime_name}")
         
         # Search for the anime
         anime_info = self.search_anime_by_name(anime_name)
         
         if anime_info is None:
-            print(f"❌ Could not find anime: {anime_name}")
+            print(f" Could not find anime: {anime_name}")
             return None
         
         # Estimate any missing features
         anime_info = self.estimate_missing_features(anime_info)
         
-        print(f"✅ Successfully retrieved anime info for: {anime_info['title']}")
+        print(f" Successfully retrieved anime info for: {anime_info['title']}")
         return anime_info
     
     def get_random_anime(self) -> Optional[Dict]:
@@ -406,7 +406,7 @@ class AnimeAPIClient:
         Returns:
             Random anime data or None if request fails
         """
-        print("🎲 Fetching random anime...")
+        print(" Fetching random anime...")
         
         anime_data = self._make_request("random/anime", use_cache=False)
         
@@ -414,7 +414,7 @@ class AnimeAPIClient:
             return None
         
         processed = self._process_anime_data(anime_data)
-        print(f"✅ Random anime: {processed['title']}")
+        print(f" Random anime: {processed['title']}")
         return processed
     
     def get_top_anime(self, page: int = 1, limit: int = 25) -> List[Dict]:
@@ -428,7 +428,7 @@ class AnimeAPIClient:
         Returns:
             List of top-rated anime
         """
-        print(f"📈 Fetching top anime (page {page})...")
+        print(f" Fetching top anime (page {page})...")
         
         results = self._make_request(
             "top/anime",
@@ -440,7 +440,7 @@ class AnimeAPIClient:
             return []
         
         processed = [self._process_anime_data(anime) for anime in results]
-        print(f"✅ Retrieved {len(processed)} top anime")
+        print(f" Retrieved {len(processed)} top anime")
         return processed
     
     def clear_cache(self) -> None:
@@ -448,32 +448,32 @@ class AnimeAPIClient:
         Clear all cached API responses
         Useful if you want fresh data
         """
-        print("🗑️  Clearing cache...")
+        print("️  Clearing cache...")
         
         try:
             for file in os.listdir(self.cache_dir):
                 if file.endswith('.json'):
                     os.remove(os.path.join(self.cache_dir, file))
-            print("✅ Cache cleared successfully")
+            print(" Cache cleared successfully")
         except Exception as e:
-            print(f"❌ Error clearing cache: {e}")
+            print(f" Error clearing cache: {e}")
 
 
 # Example usage and testing
 if __name__ == "__main__":
     print("=" * 60)
-    print("🎌 Jikan API Wrapper - Testing")
+    print(" Jikan API Wrapper - Testing")
     print("=" * 60)
     
     # Initialize the client
     client = AnimeAPIClient()
     
     # Test 1: Search for an anime by name
-    print("\n🧪 Test 1: Search by name")
+    print("\n Test 1: Search by name")
     print("-" * 60)
     anime = client.search_anime_by_name("Death Note")
     if anime:
-        print(f"✅ Found: {anime['title']}")
+        print(f" Found: {anime['title']}")
         print(f"   Score: {anime['score']}")
         print(f"   Type: {anime['type']}")
         print(f"   Episodes: {anime['episodes']}")
@@ -481,12 +481,12 @@ if __name__ == "__main__":
         print(f"   Studios: {', '.join(anime['studios'])}")
     
     # Test 2: Get autocomplete suggestions
-    print("\n🧪 Test 2: Get suggestions")
+    print("\n Test 2: Get suggestions")
     print("-" * 60)
     suggestions = client.get_anime_suggestions("Death", limit=5)
     for s in suggestions:
         print(f"  • {s['title']} ({s['year']}) - {s['score']}/10")
     
     print("\n" + "=" * 60)
-    print("✅ All tests completed!")
+    print(" All tests completed!")
     print("=" * 60)

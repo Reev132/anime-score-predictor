@@ -1,21 +1,21 @@
-# 🎌 Anime Score Predictor
+#  Anime Score Predictor
 
 A data analysis and machine learning project that predicts MyAnimeList (MAL) scores for anime. This project emphasizes **exploratory data analysis**, **data visualization**, and **statistical insights** to understand what makes anime successful, with machine learning as a predictive tool.
 
-**🚀 [Live Demo](https://anime-score-predictor.streamlit.app/)**
+** [Live Demo](https://anime-score-predictor.streamlit.app/)**
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)
 
 ---
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Overview](#overview)
 - [Data Analysis Highlights](#data-analysis-highlights)
 - [Key Insights](#key-insights)
 ---
-## 🎯 Overview
+##  Overview
 
 This project analyzes **3000+ anime** from MyAnimeList to uncover patterns in what makes anime successful. Through comprehensive data analysis and visualization, I identified key factors influencing anime ratings and built a predictive model to forecast scores for new anime.
 
@@ -28,7 +28,7 @@ This project analyzes **3000+ anime** from MyAnimeList to uncover patterns in wh
 
 ---
 
-## 📊 Data Analysis Highlights
+##  Data Analysis Highlights
 
 ### Dataset Overview
 - **3000+ anime** collected from MyAnimeList via Jikan API
@@ -43,13 +43,13 @@ This project analyzes **3000+ anime** from MyAnimeList to uncover patterns in wh
 Implemented a multi-faceted collection approach to ensure dataset quality:
 
 ```
-📈 Top-rated anime     --→ Capture excellent examples
-🌸 Seasonal anime      --→ Time-based patterns
-🏷️ Genre-base          --→ Comprehensive genre coverage
-📊 Score ranges        --→ Balanced distribution
-⭐ Popularity tiers    --→ Different audience sizes
-🎬 Type diversity      --→ Format variations
-🎲 Random sampling     --→ Unbiased diversity
+ Top-rated anime     --→ Capture excellent examples
+ Seasonal anime      --→ Time-based patterns
+️ Genre-base          --→ Comprehensive genre coverage
+ Score ranges        --→ Balanced distribution
+ Popularity tiers    --→ Different audience sizes
+ Type diversity      --→ Format variations
+ Random sampling     --→ Unbiased diversity
 ```
 
 **Key Metric:** Minimum 100 users scored per anime (ensures statistical validity)
@@ -81,7 +81,7 @@ Created meaningful features through domain knowledge:
 - Source material encoding (Manga, Light Novel, Original, etc.)
 
 ---
-## 🔍 Key Insights
+##  Key Insights
 
 ### 1. **Score Distribution Analysis**
 

@@ -32,9 +32,9 @@ Prediction Bias:
 INTERPRETATION
 ================================================================================
 
-✅ EXCELLENT: Model predictions are highly accurate (80%+ within 1 point)
+ EXCELLENT: Model predictions are highly accurate (80%+ within 1 point)
 
-⚠️  Model tends to under-predict scores
+️  Model tends to under-predict scores
 
 ================================================================================
 RECOMMENDATIONS
