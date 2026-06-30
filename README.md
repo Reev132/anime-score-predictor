@@ -13,6 +13,7 @@ A data analysis and machine learning project that predicts MyAnimeList (MAL) sco
 
 - [Overview](#overview)
 - [Data Analysis Highlights](#data-analysis-highlights)
+- [Key Insights](#key-insights)
 ---
 ## 🎯 Overview
 
@@ -80,3 +81,29 @@ Created meaningful features through domain knowledge:
 - Source material encoding (Manga, Light Novel, Original, etc.)
 
 ---
+## 🔍 Key Insights
+
+### 1. **Score Distribution Analysis**
+
+```
+Distribution of Anime Scores:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Excellent (8–10) │ ██░░░░░░░░  694 anime (19%)
+Good (7–8)       │ █████░░░░░  1802 anime (50%)
+Medium (6–7)     │ ██░░░░░░░░  77 anime (22%)
+Low (0–6)        │ █░░░░░░░░░  329 anime (9%)
+
+```
+
+**Finding:** Scores follow approximately normal distribution centered around 7 - 8
+
+### 2. **Genre Performance**
+
+**Top 5 Highest-Rated Genres:**
+1. **Drama** - Avg: 7.49 
+2. **Mystery** - Avg: 7.49
+3. **Adventure** - Avg: 7.36
+4. **Supernatural** - Avg: 7.34
+5. **Action** - Avg: 7.32 
+
+**Insight:** Drama-heavy, thought-provoking genres consistently score higher than action-focused genres.
