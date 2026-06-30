@@ -69,14 +69,21 @@ class AnimeScorePredictionInterface:
         
         return template
     
-    def predict_score(self, anime_info):
+    def predict_score(self, anime_info, pre_release=False):
         """
         Predict anime score from anime information
+
+        pre_release: if True, ignores popularity-derived features
+        (members, favorites, scored_by, popularity, engagement_rate,
+        popularity_tier) instead of substituting fake fallback values.
+        Use this for anime that haven't aired yet, since those numbers
+        don't exist yet and shouldn't be guessed.
         """
-        print(f"\n Predicting score for: {anime_info.get('title', 'Unknown Anime')}")
+        mode_label = "pre-release" if pre_release else "standard"
+        print(f"\n Predicting score for: {anime_info.get('title', 'Unknown Anime')} ({mode_label} mode)")
         
         # Create feature vector
-        feature_vector = self._create_feature_vector(anime_info)
+        feature_vector = self._create_feature_vector(anime_info, pre_release=pre_release)
         
         # Make prediction
         if self.model_name in ['Linear Regression', 'Ridge Regression', 'Lasso Regression', 'Support Vector Regression']:
@@ -102,13 +109,16 @@ class AnimeScorePredictionInterface:
             'predicted_score': round(predicted_score, 2),
             'confidence_interval': (round(confidence_interval[0], 2), round(confidence_interval[1], 2)),
             'model_used': self.model_name,
-            'model_rmse': round(rmse, 3)
+            'model_rmse': round(rmse, 3),
+            'pre_release': pre_release
         }
         
         # Display prediction
         print(f" Predicted Score: {result['predicted_score']:.2f}")
         print(f" 95% Confidence Interval: {result['confidence_interval'][0]:.2f} - {result['confidence_interval'][1]:.2f}")
         print(f" Model: {result['model_used']} (RMSE: {result['model_rmse']})")
+        if pre_release:
+            print(" Note: pre-release mode — popularity/engagement features excluded, prediction based only on genre, studio, source, format, and rating.")
         
         # Score interpretation
         if predicted_score >= 8.5:
@@ -124,9 +134,13 @@ class AnimeScorePredictionInterface:
         
         return result
     
-    def _create_feature_vector(self, anime_info):
+    def _create_feature_vector(self, anime_info, pre_release=False):
         """
         Convert anime info dictionary to feature vector matching training data
+
+        pre_release: if True, zero out members/favorites/scored_by/popularity/
+        engagement_rate/popularity_tier instead of using fallback constants,
+        since these don't exist yet for an unreleased anime.
         """
         feature_vector = np.zeros(len(self.feature_columns))
         current_year = datetime.now().year
@@ -143,16 +157,28 @@ class AnimeScorePredictionInterface:
                 feature_vector[i] = year if year is not None else current_year
 
             elif feature == 'members':
-                feature_vector[i] = anime_info.get('members') or 50000
+                if pre_release:
+                    feature_vector[i] = 0
+                else:
+                    feature_vector[i] = anime_info.get('members') or 50000
 
             elif feature == 'favorites':
-                feature_vector[i] = anime_info.get('favorites') or 2000
+                if pre_release:
+                    feature_vector[i] = 0
+                else:
+                    feature_vector[i] = anime_info.get('favorites') or 2000
 
             elif feature == 'scored_by':
-                feature_vector[i] = anime_info.get('scored_by') or 25000
+                if pre_release:
+                    feature_vector[i] = 0
+                else:
+                    feature_vector[i] = anime_info.get('scored_by') or 25000
 
             elif feature == 'popularity':
-                feature_vector[i] = anime_info.get('popularity') or 1000
+                if pre_release:
+                    feature_vector[i] = 0
+                else:
+                    feature_vector[i] = anime_info.get('popularity') or 1000
 
             elif feature == 'anime_age':
                 year = anime_info.get('year') or current_year
@@ -163,15 +189,18 @@ class AnimeScorePredictionInterface:
                 feature_vector[i] = 1 if (current_year - year) <= 5 else 0
 
             elif feature == 'engagement_rate':
-                members = anime_info.get('members')
-                scored_by = anime_info.get('scored_by')
+                if pre_release:
+                    feature_vector[i] = 0
+                else:
+                    members = anime_info.get('members')
+                    scored_by = anime_info.get('scored_by')
 
-                if members is None or members <= 0:
-                    members = 1
-                if scored_by is None or scored_by < 0:
-                    scored_by = 0
+                    if members is None or members <= 0:
+                        members = 1
+                    if scored_by is None or scored_by < 0:
+                        scored_by = 0
 
-                feature_vector[i] = scored_by / members
+                    feature_vector[i] = scored_by / members
 
             elif feature == 'source_encoded':
                 source_mapping = {
@@ -243,17 +272,20 @@ class AnimeScorePredictionInterface:
                     feature_vector[i] = 1
 
             elif feature.startswith('popularity_tier_'):
-                popularity = anime_info.get('popularity') or 1000
-                tier = feature.replace('popularity_tier_', '')
+                if pre_release:
+                    pass  # leave at 0 — no popularity tier assumed for unreleased anime
+                else:
+                    popularity = anime_info.get('popularity') or 1000
+                    tier = feature.replace('popularity_tier_', '')
 
-                if tier == 'Top_Tier' and popularity <= 100:
-                    feature_vector[i] = 1
-                elif tier == 'High' and 101 <= popularity <= 1000:
-                    feature_vector[i] = 1
-                elif tier == 'Medium' and 1001 <= popularity <= 5000:
-                    feature_vector[i] = 1
-                elif tier == 'Low' and popularity > 5000:
-                    feature_vector[i] = 1
+                    if tier == 'Top_Tier' and popularity <= 100:
+                        feature_vector[i] = 1
+                    elif tier == 'High' and 101 <= popularity <= 1000:
+                        feature_vector[i] = 1
+                    elif tier == 'Medium' and 1001 <= popularity <= 5000:
+                        feature_vector[i] = 1
+                    elif tier == 'Low' and popularity > 5000:
+                        feature_vector[i] = 1
 
         return feature_vector
 
