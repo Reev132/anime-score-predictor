@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 
 # Add scripts directory to path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
+script_dir = Path(__file__).parent / "scripts"
+sys.path.insert(0, str(script_dir))
 
 from scripts.anime_lookup import AnimeAPIClient
 from scripts.prediction_interface import AnimeScorePredictionInterface
