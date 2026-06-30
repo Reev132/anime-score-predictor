@@ -162,8 +162,9 @@ if st.session_state.selected_anime and st.session_state.model_loaded:
     anime = st.session_state.selected_anime
     
     # Run prediction
+    is_pre_release = not anime.get("is_released", True)
     with st.spinner("Predicting score"):
-        result = st.session_state.predictor.predict_score(anime)
+        result = st.session_state.predictor.predict_score(anime, pre_release=is_pre_release)
     
     # Add to history
     if not st.session_state.prediction_history or st.session_state.prediction_history[0]["anime_data"]["mal_id"] != anime["mal_id"]:
@@ -199,6 +200,8 @@ if st.session_state.prediction_history:
         # Add color coding to score
         score_color = "#22c55e" if score >= 8 else "#eab308" if score >= 7 else "#ef4444"
         st.markdown(f'<div class="score-display" style="color:{score_color}">{score:.2f} / 10</div>', unsafe_allow_html=True)
+        if result.get("pre_release"):
+                    st.caption("⚠️ Not yet aired — prediction based on genre, studio, source, and format only (no popularity data exists yet)")
 
         low, high = result["confidence_interval"]
         st.info(f"95% confidence interval: **{low:.2f} – {high:.2f}**")
